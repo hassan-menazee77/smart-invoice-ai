@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Smart Invoice AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            primary: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+  
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-40">
+    <div class="flex flex-col h-full">
+      <div class="p-6 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+          <i class="fas fa-bolt text-white text-sm"></i>
+        </div>
+        <span class="font-bold text-lg">Smart Invoice</span>
+      </div>
+      
+      <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+        <a href="dashboard.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-chart-pie w-5"></i> Dashboard
+        </a>
+        <a href="invoice-create.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-plus-circle w-5"></i> Create Invoice
+        </a>
+        <a href="invoice-list.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-file-invoice w-5"></i> Invoices
+        </a>
+        <a href="clients.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-users w-5"></i> Clients
+        </a>
+        <a href="templates.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-palette w-5"></i> Templates
+        </a>
+        <a href="payments.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-credit-card w-5"></i> Payments
+        </a>
+        <a href="analytics.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-chart-line w-5"></i> Analytics
+        </a>
+        <a href="ai-assistant.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-robot w-5"></i> AI Assistant
+        </a>
+      </nav>
+      
+      <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+        <a href="settings.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-cog w-5"></i> Settings
+        </a>
+      </div>
+    </div>
+  </aside>
+  
+  <!-- Sidebar Backdrop -->
+  <div id="sidebarBackdrop" class="sidebar-backdrop lg:hidden"></div>
+  
+  <!-- Main Content -->
+  <div class="lg:ml-64 min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
+      <div class="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 class="text-xl font-semibold">Dashboard</h1>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <button id="themeToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            <i id="themeIcon" class="fas fa-moon text-gray-500"></i>
+          </button>
+          
+          <div class="relative">
+            <button id="userMenuBtn" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <img id="userAvatar" src="" alt="" class="w-8 h-8 rounded-full">
+              <div class="hidden md:block text-left">
+                <div id="userName" class="text-sm font-medium"></div>
+                <div id="userPlan" class="text-xs"></div>
+              </div>
+              <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+            </button>
+            
+            <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+              <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <div id="userEmail" class="text-sm text-gray-600 dark:text-gray-400"></div>
+              </div>
+              <a href="settings.html" class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <i class="fas fa-user text-gray-400 w-5"></i> Profile
+              </a>
+              <a href="settings.html" class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <i class="fas fa-cog text-gray-400 w-5"></i> Settings
+              </a>
+              <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                <button id="logoutBtn" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                  <i class="fas fa-sign-out-alt w-5"></i> Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Dashboard Content -->
+    <main class="flex-1 p-4 sm:p-6 lg:p-8">
+      <!-- AI Insights -->
+      <div id="aiInsights" class="mb-8 space-y-3"></div>
+      
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+              <i class="fas fa-dollar-sign text-primary-600 text-lg"></i>
+            </div>
+            <span class="text-xs font-medium text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">+12%</span>
+          </div>
+          <div class="text-2xl font-bold" id="statRevenue">$0</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Total Revenue</div>
+        </div>
+        
+        <div class="card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+              <i class="fas fa-clock text-orange-600 text-lg"></i>
+            </div>
+            <span class="text-xs font-medium text-orange-600 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded-full" id="statOutstandingBadge">Pending</span>
+          </div>
+          <div class="text-2xl font-bold" id="statOutstanding">$0</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Outstanding</div>
+        </div>
+        
+        <div class="card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+              <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+            </div>
+            <span class="text-xs font-medium text-red-600 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full" id="statOverdueCount">0</span>
+          </div>
+          <div class="text-2xl font-bold" id="statOverdue">$0</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Overdue</div>
+        </div>
+        
+        <div class="card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <i class="fas fa-chart-pie text-green-600 text-lg"></i>
+            </div>
+            <span class="text-xs font-medium text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full" id="statCollectionRate">0%</span>
+          </div>
+          <div class="text-2xl font-bold" id="statClients">0</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Active Clients</div>
+        </div>
+      </div>
+      
+      <!-- Charts & Tables -->
+      <div class="grid lg:grid-cols-3 gap-8 mb-8">
+        <!-- Revenue Chart -->
+        <div class="lg:col-span-2 card p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold">Revenue Overview</h3>
+            <select class="form-input w-auto text-sm py-1.5 px-3">
+              <option>Last 6 Months</option>
+              <option>Last Year</option>
+              <option>This Year</option>
+            </select>
+          </div>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+        
+        <!-- Invoice Status -->
+        <div class="card p-6">
+          <h3 class="text-lg font-semibold mb-6">Invoice Status</h3>
+          <div class="chart-container" style="height: 250px;">
+            <canvas id="statusChart"></canvas>
+          </div>
+          <div class="mt-4 space-y-3" id="statusLegend"></div>
+        </div>
+      </div>
+      
+      <!-- Recent Invoices & Activity -->
+      <div class="grid lg:grid-cols-2 gap-8">
+        <!-- Recent Invoices -->
+        <div class="card overflow-hidden">
+          <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Recent Invoices</h3>
+            <a href="invoice-list.html" class="text-sm text-primary-600 hover:text-primary-700 font-medium">View All</a>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Client</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentInvoices"></tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="card overflow-hidden">
+          <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Recent Activity</h3>
+            <a href="#" class="text-sm text-primary-600 hover:text-primary-700 font-medium">View All</a>
+          </div>
+          <div class="p-6 space-y-4" id="recentActivity"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ai-engine.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let revenueChart, statusChart;
+
+    
+    async function loadDashboard() {
+      const company = await Auth.getCompany();
+      if (!company) return;
+      
+      // Load stats
+      const stats = await DB.getDashboardStats(company.id);
+      document.getElementById('statRevenue').textContent = Utils.formatCurrency(stats.totalRevenue);
+      document.getElementById('statOutstanding').textContent = Utils.formatCurrency(stats.outstanding);
+      document.getElementById('statOverdue').textContent = Utils.formatCurrency(stats.overdueAmount);
+      document.getElementById('statClients').textContent = stats.clientCount;
+      document.getElementById('statCollectionRate').textContent = stats.collectionRate + '%';
+      document.getElementById('statOverdueCount').textContent = stats.overdueCount + ' overdue';
+      
+      // AI Insights
+      const invoices = await DB.query('invoices', 'companyId', company.id);
+      const insights = AIEngine.generateInsights(stats, invoices);
+      const insightsContainer = document.getElementById('aiInsights');
+      insightsContainer.innerHTML = insights.map(insight => `
+        <div class="flex items-start gap-3 p-4 rounded-xl ${
+          insight.type === 'warning' ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800' :
+          insight.type === 'danger' ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' :
+          'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+        }">
+          <i class="fas ${
+            insight.type === 'warning' ? 'fa-exclamation-triangle text-yellow-600' :
+            insight.type === 'danger' ? 'fa-exclamation-circle text-red-600' :
+            'fa-lightbulb text-blue-600'
+          } mt-0.5"></i>
+          <div class="flex-1">
+            <h4 class="text-sm font-semibold ${insight.type === 'warning' ? 'text-yellow-800 dark:text-yellow-200' : insight.type === 'danger' ? 'text-red-800 dark:text-red-200' : 'text-blue-800 dark:text-blue-200'}">${insight.title}</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${insight.message}</p>
+          </div>
+          <button class="text-xs font-medium px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">${insight.action}</button>
+        </div>
+      `).join('');
+      
+      // Revenue Chart
+      const revenueData = await DB.getRevenueData(company.id, 6);
+      const ctx = document.getElementById('revenueChart').getContext('2d');
+      revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: revenueData.map(d => d.month),
+          datasets: [
+            {
+              label: 'Invoiced',
+              data: revenueData.map(d => d.invoiced),
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: 'Paid',
+              data: revenueData.map(d => d.paid),
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              fill: true,
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+      
+      // Status Chart
+      const statusCtx = document.getElementById('statusChart').getContext('2d');
+      statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Paid', 'Pending', 'Overdue', 'Draft'],
+          datasets: [{
+            data: [stats.paidCount, stats.pendingCount, stats.overdueCount, stats.draftCount],
+            backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6b7280'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: { legend: { display: false } }
+        }
+      });
+      
+      // Status Legend
+      const total = stats.paidCount + stats.pendingCount + stats.overdueCount + stats.draftCount;
+      document.getElementById('statusLegend').innerHTML = [
+        { label: 'Paid', count: stats.paidCount, color: 'bg-green-500', text: 'text-green-600' },
+        { label: 'Pending', count: stats.pendingCount, color: 'bg-yellow-500', text: 'text-yellow-600' },
+        { label: 'Overdue', count: stats.overdueCount, color: 'bg-red-500', text: 'text-red-600' },
+        { label: 'Draft', count: stats.draftCount, color: 'bg-gray-500', text: 'text-gray-600' }
+      ].map(item => `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full ${item.color}"></div>
+            <span class="text-sm text-gray-600 dark:text-gray-400">${item.label}</span>
+          </div>
+          <span class="text-sm font-medium ${item.text}">${item.count} (${total > 0 ? Math.round(item.count/total*100) : 0}%)</span>
+        </div>
+      `).join('');
+      
+      // Recent Invoices
+      const recentInvoices = invoices.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+      const clients = await DB.query('clients', 'companyId', company.id);
+      document.getElementById('recentInvoices').innerHTML = recentInvoices.map(inv => {
+        const client = clients.find(c => c.id === inv.clientId);
+        return `
+          <tr class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition" onclick="window.location.href='invoice-view.html?id=${inv.id}'">
+            <td class="font-medium">${inv.invoiceNumber}</td>
+            <td class="text-gray-600 dark:text-gray-400">${client?.name || 'Unknown'}</td>
+            <td class="font-medium">${Utils.formatCurrency(inv.total)}</td>
+            <td>${App.formatStatus(inv.status)}</td>
+          </tr>
+        `;
+      }).join('');
+      
+      // Recent Activity
+      const activities = await DB.query('activities', 'companyId', company.id);
+      const recentActivities = activities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+      document.getElementById('recentActivity').innerHTML = recentActivities.map(act => `
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+            <i class="fas ${
+              act.type === 'invoice_created' ? 'fa-file-invoice text-primary-500' :
+              act.type === 'payment_received' ? 'fa-dollar-sign text-green-500' :
+              act.type === 'invoice_overdue' ? 'fa-exclamation-triangle text-red-500' :
+              act.type === 'client_added' ? 'fa-user-plus text-blue-500' :
+              'fa-cog text-gray-500'
+            } text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">${act.title}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">${act.description}</p>
+            <p class="text-xs text-gray-400 mt-1">${Utils.timeAgo(act.createdAt)}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!await Auth.requireAuth()) return;
+      await loadDashboard();
+    });
+
+  </script>
+</body>
+</html>

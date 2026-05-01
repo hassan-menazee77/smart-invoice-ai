@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Invoice - Smart Invoice AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            primary: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+  
+  <aside id="sidebar" class="sidebar fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-40">
+    <div class="flex flex-col h-full">
+      <div class="p-6 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+          <i class="fas fa-bolt text-white text-sm"></i>
+        </div>
+        <span class="font-bold text-lg">Smart Invoice</span>
+      </div>
+      <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+        <a href="dashboard.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-chart-pie w-5"></i> Dashboard</a>
+        <a href="invoice-create.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-plus-circle w-5"></i> Create Invoice</a>
+        <a href="invoice-list.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-file-invoice w-5"></i> Invoices</a>
+        <a href="clients.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-users w-5"></i> Clients</a>
+        <a href="templates.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-palette w-5"></i> Templates</a>
+        <a href="payments.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-credit-card w-5"></i> Payments</a>
+        <a href="analytics.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-chart-line w-5"></i> Analytics</a>
+        <a href="ai-assistant.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-robot w-5"></i> AI Assistant</a>
+      </nav>
+      <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+        <a href="settings.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-cog w-5"></i> Settings</a>
+      </div>
+    </div>
+  </aside>
+  
+  <div id="sidebarBackdrop" class="sidebar-backdrop lg:hidden"></div>
+  
+  <div class="lg:ml-64 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
+      <div class="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"><i class="fas fa-bars"></i></button>
+          <h1 class="text-xl font-semibold">Create Invoice</h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <button id="themeToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"><i id="themeIcon" class="fas fa-moon text-gray-500"></i></button>
+          <div class="relative">
+            <button id="userMenuBtn" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <img id="userAvatar" src="" alt="" class="w-8 h-8 rounded-full">
+              <div class="hidden md:block text-left"><div id="userName" class="text-sm font-medium"></div><div id="userPlan" class="text-xs"></div></div>
+              <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+            </button>
+            <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+              <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700"><div id="userEmail" class="text-sm text-gray-600 dark:text-gray-400"></div></div>
+              <a href="settings.html" class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"><i class="fas fa-user text-gray-400 w-5"></i> Profile</a>
+              <a href="settings.html" class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"><i class="fas fa-cog text-gray-400 w-5"></i> Settings</a>
+              <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                <button id="logoutBtn" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"><i class="fas fa-sign-out-alt w-5"></i> Sign Out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <main class="flex-1 p-4 sm:p-6 lg:p-8">
+      <!-- AI Input -->
+      <div class="card p-6 mb-8">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <i class="fas fa-wand-magic-sparkles text-white"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold">AI Invoice Creator</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Describe your invoice in plain English</p>
+          </div>
+        </div>
+        <div class="relative">
+          <textarea id="aiInput" rows="2" class="form-input resize-none pr-24" placeholder="Example: Invoice TechCorp for website redesign $5000 due in 30 days"></textarea>
+          <button onclick="processAI()" class="absolute right-3 bottom-3 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium rounded-lg hover:shadow-lg transition">
+            <i class="fas fa-sparkles"></i> Generate
+          </button>
+        </div>
+      </div>
+      
+      <div class="grid xl:grid-cols-2 gap-8">
+        <!-- Form -->
+        <div class="space-y-6">
+          <div class="card p-6">
+            <h3 class="text-lg font-semibold mb-4">Client</h3>
+            <select id="clientSelect" class="form-input mb-3">
+              <option value="">Select a client...</option>
+            </select>
+            <button onclick="showAddClientModal()" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+              <i class="fas fa-plus"></i> Add new client
+            </button>
+          </div>
+          
+          <div class="card p-6">
+            <h3 class="text-lg font-semibold mb-4">Invoice Details</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Invoice #</label>
+                <input type="text" id="invoiceNumber" class="form-input" readonly>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Template</label>
+                <select id="templateSelect" class="form-input"></select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Date</label>
+                <input type="date" id="issueDate" class="form-input">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Due Date</label>
+                <input type="date" id="dueDate" class="form-input">
+              </div>
+            </div>
+          </div>
+          
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Items</h3>
+              <div class="flex gap-2">
+                <select id="industrySelect" onchange="loadSuggestions()" class="form-input text-sm py-1.5 w-auto">
+                  <option value="technology">Technology</option>
+                  <option value="design">Design</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="consulting">Consulting</option>
+                  <option value="writing">Writing</option>
+                </select>
+                <button onclick="addItem()" class="btn btn-primary text-sm"><i class="fas fa-plus"></i> Add</button>
+              </div>
+            </div>
+            <div id="suggestionsPanel" class="mb-4 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg hidden">
+              <p class="text-xs font-medium text-primary-700 dark:text-primary-300 mb-2">AI Suggestions:</p>
+              <div id="suggestionsList" class="flex flex-wrap gap-2"></div>
+            </div>
+            <div id="itemsContainer" class="space-y-3"></div>
+          </div>
+          
+          <div class="card p-6">
+            <h3 class="text-lg font-semibold mb-4">Summary</h3>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tax Rate (%)</label>
+                <input type="number" id="taxRate" value="10" step="0.1" class="form-input" onchange="calculateTotals()">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Discount (%)</label>
+                <input type="number" id="discountRate" value="0" step="0.1" class="form-input" onchange="calculateTotals()">
+              </div>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Subtotal:</span><span id="subtotalDisplay" class="font-medium">$0.00</span></div>
+              <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Tax:</span><span id="taxDisplay" class="font-medium">$0.00</span></div>
+              <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Discount:</span><span id="discountDisplay" class="font-medium text-green-600">-$0.00</span></div>
+              <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>Total:</span><span id="totalDisplay">$0.00</span></div>
+            </div>
+          </div>
+          
+          <div class="card p-6">
+            <h3 class="text-lg font-semibold mb-4">Notes</h3>
+            <textarea id="invoiceNotes" rows="3" class="form-input resize-none" placeholder="Additional notes or terms..."></textarea>
+          </div>
+          
+          <div class="flex gap-4">
+            <button onclick="saveInvoice('draft')" class="btn btn-secondary flex-1"><i class="fas fa-save"></i> Save Draft</button>
+            <button onclick="saveInvoice('pending')" class="btn btn-primary flex-1"><i class="fas fa-paper-plane"></i> Send Invoice</button>
+          </div>
+        </div>
+        
+        <!-- Preview -->
+        <div class="xl:sticky xl:top-24">
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Preview</h3>
+              <div class="flex gap-2">
+                <button onclick="exportPDF()" class="text-sm px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-download"></i> PDF</button>
+                <button onclick="printInvoice()" class="text-sm px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-print"></i> Print</button>
+              </div>
+            </div>
+            <div id="invoicePreview" class="invoice-template bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 text-sm"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-content p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Add Client</h3>
+        <button onclick="App.closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="space-y-4">
+        <input type="text" id="newClientName" class="form-input" placeholder="Client Name">
+        <input type="email" id="newClientEmail" class="form-input" placeholder="Email">
+        <input type="tel" id="newClientPhone" class="form-input" placeholder="Phone">
+        <input type="text" id="newClientAddress" class="form-input" placeholder="Address">
+        <button onclick="addClient()" class="w-full btn btn-primary">Add Client</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ai-engine.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let company, clients, templates, currentItems = [];
+
+    
+    async function init() {
+      company = await Auth.getCompany();
+      if (!company) return;
+      
+      document.getElementById('invoiceNumber').value = Utils.generateInvoiceNumber();
+      document.getElementById('issueDate').valueAsDate = new Date();
+      const due = new Date();
+      due.setDate(due.getDate() + 30);
+      document.getElementById('dueDate').valueAsDate = due;
+      
+      clients = await DB.query('clients', 'companyId', company.id);
+      const select = document.getElementById('clientSelect');
+      clients.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+      });
+      
+      templates = await DB.getAll('templates');
+      document.getElementById('templateSelect').innerHTML = templates.map(t => '<option value="' + t.id + '">' + t.name + '</option>').join('');
+      
+      addItem();
+      loadSuggestions();
+      updatePreview();
+    }
+    
+    function addItem(desc, qty, rate) {
+      const id = Date.now() + Math.random();
+      currentItems.push({ id, description: desc || '', quantity: qty || 1, rate: rate || 0 });
+      renderItems();
+    }
+    
+    function removeItem(id) {
+      currentItems = currentItems.filter(i => i.id !== id);
+      renderItems();
+    }
+    
+    function updateItem(id, field, value) {
+      const item = currentItems.find(i => i.id === id);
+      if (!item) return;
+      item[field] = field === 'description' ? value : parseFloat(value) || 0;
+      renderItems();
+    }
+    
+    function renderItems() {
+      const container = document.getElementById('itemsContainer');
+      container.innerHTML = currentItems.map(item => 
+        '<div class="flex gap-3 items-start p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">' +
+          '<div class="flex-1">' +
+            '<input type="text" value="' + item.description + '" onchange="updateItem(' + item.id + ', \'description\', this.value)" class="form-input text-sm mb-2" placeholder="Description">' +
+            '<div class="flex gap-2">' +
+              '<input type="number" value="' + item.quantity + '" onchange="updateItem(' + item.id + ', \'quantity\', this.value)" class="form-input text-sm w-20" min="1" placeholder="Qty">' +
+              '<input type="number" value="' + item.rate + '" onchange="updateItem(' + item.id + ', \'rate\', this.value)" class="form-input text-sm w-28" step="0.01" min="0" placeholder="Rate">' +
+              '<span class="self-center font-medium text-sm w-24 text-right">' + Utils.formatCurrency(item.quantity * item.rate) + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<button onclick="removeItem(' + item.id + ')" class="text-red-500 hover:text-red-700 mt-1"><i class="fas fa-trash"></i></button>' +
+        '</div>'
+      ).join('');
+      calculateTotals();
+    }
+    
+    function calculateTotals() {
+      const subtotal = currentItems.reduce((sum, i) => sum + (i.quantity * i.rate), 0);
+      const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+      const discountRate = parseFloat(document.getElementById('discountRate').value) || 0;
+      const tax = (subtotal * taxRate) / 100;
+      const discount = (subtotal * discountRate) / 100;
+      const total = subtotal + tax - discount;
+      
+      document.getElementById('subtotalDisplay').textContent = Utils.formatCurrency(subtotal);
+      document.getElementById('taxDisplay').textContent = Utils.formatCurrency(tax);
+      document.getElementById('discountDisplay').textContent = '-' + Utils.formatCurrency(discount);
+      document.getElementById('totalDisplay').textContent = Utils.formatCurrency(total);
+      updatePreview();
+    }
+    
+    function updatePreview() {
+      const clientId = document.getElementById('clientSelect').value;
+      const client = clients.find(c => c.id === clientId);
+      const subtotal = currentItems.reduce((sum, i) => sum + (i.quantity * i.rate), 0);
+      const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+      const discountRate = parseFloat(document.getElementById('discountRate').value) || 0;
+      const tax = (subtotal * taxRate) / 100;
+      const discount = (subtotal * discountRate) / 100;
+      const total = subtotal + tax - discount;
+      
+      let itemsHtml = currentItems.map(item => 
+        '<tr class="border-b border-gray-100 dark:border-gray-700">' +
+          '<td class="py-2">' + item.description + '</td>' +
+          '<td class="py-2 text-right">' + item.quantity + '</td>' +
+          '<td class="py-2 text-right">' + Utils.formatCurrency(item.rate) + '</td>' +
+          '<td class="py-2 text-right font-medium">' + Utils.formatCurrency(item.quantity * item.rate) + '</td>' +
+        '</tr>'
+      ).join('');
+      
+      document.getElementById('invoicePreview').innerHTML = 
+        '<div class="flex justify-between items-start mb-6">' +
+          '<div>' +
+            '<h2 class="text-xl font-bold text-primary-600">' + (company?.name || 'Your Company') + '</h2>' +
+            '<p class="text-xs text-gray-500 mt-1">' + (company?.email || '') + '</p>' +
+          '</div>' +
+          '<div class="text-right">' +
+            '<h1 class="text-2xl font-bold text-gray-300">INVOICE</h1>' +
+            '<p class="text-xs text-gray-500 mt-1">#' + document.getElementById('invoiceNumber').value + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">' +
+          '<p class="text-xs font-semibold text-gray-500 uppercase mb-1">Bill To</p>' +
+          '<p class="font-medium">' + (client?.name || 'Select a client') + '</p>' +
+          '<p class="text-xs text-gray-500">' + (client?.email || '') + '</p>' +
+        '</div>' +
+        '<table class="w-full mb-4">' +
+          '<thead><tr class="text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200 dark:border-gray-700">' +
+            '<th class="pb-2">Description</th><th class="pb-2 text-right">Qty</th><th class="pb-2 text-right">Rate</th><th class="pb-2 text-right">Amount</th>' +
+          '</tr></thead>' +
+          '<tbody>' + itemsHtml + '</tbody>' +
+        '</table>' +
+        '<div class="flex justify-end">' +
+          '<div class="w-48 space-y-1 text-sm">' +
+            '<div class="flex justify-between"><span class="text-gray-500">Subtotal</span><span>' + Utils.formatCurrency(subtotal) + '</span></div>' +
+            '<div class="flex justify-between"><span class="text-gray-500">Tax</span><span>' + Utils.formatCurrency(tax) + '</span></div>' +
+            (discount > 0 ? '<div class="flex justify-between"><span class="text-gray-500">Discount</span><span class="text-green-600">-' + Utils.formatCurrency(discount) + '</span></div>' : '') +
+            '<div class="flex justify-between font-bold text-lg border-t border-gray-200 dark:border-gray-700 pt-2 mt-2"><span>Total</span><span>' + Utils.formatCurrency(total) + '</span></div>' +
+          '</div>' +
+        '</div>';
+    }
+    
+    async function processAI() {
+      const text = document.getElementById('aiInput').value;
+      if (!text.trim()) return;
+      
+      const parsed = AIEngine.parseInvoiceText(text);
+      if (parsed.clientName && !document.getElementById('clientSelect').value) {
+        const existing = clients.find(c => c.name.toLowerCase() === parsed.clientName.toLowerCase());
+        if (existing) {
+          document.getElementById('clientSelect').value = existing.id;
+        }
+      }
+      
+      if (parsed.dueDays) {
+        const due = new Date();
+        due.setDate(due.getDate() + parsed.dueDays);
+        document.getElementById('dueDate').valueAsDate = due;
+      }
+      
+      if (parsed.items && parsed.items.length > 0) {
+        currentItems = [];
+        parsed.items.forEach(item => addItem(item.description, item.quantity, item.rate));
+      }
+      
+      App.toast('AI generated invoice from your description', 'success');
+      updatePreview();
+    }
+    
+    function loadSuggestions() {
+      const industry = document.getElementById('industrySelect').value;
+      const suggestions = AIEngine.suggestServices(industry);
+      const panel = document.getElementById('suggestionsPanel');
+      const list = document.getElementById('suggestionsList');
+      
+      if (suggestions.length > 0) {
+        panel.classList.remove('hidden');
+        list.innerHTML = suggestions.slice(0, 5).map(s => 
+          '<button onclick="addItem(\'' + s.name + '\', 1, ' + s.suggestedPrice + ')" class="text-xs px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-500 transition">' +
+            s.name + ' (' + Utils.formatCurrency(s.suggestedPrice) + ')' +
+          '</button>'
+        ).join('');
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+    
+    function showAddClientModal() {
+      App.openModal();
+    }
+    
+    async function addClient() {
+      const client = {
+        id: Utils.uuid(),
+        companyId: company.id,
+        name: document.getElementById('newClientName').value,
+        email: document.getElementById('newClientEmail').value,
+        phone: document.getElementById('newClientPhone').value,
+        address: document.getElementById('newClientAddress').value,
+        status: 'active',
+        createdAt: new Date().toISOString()
+      };
+      await DB.add('clients', client);
+      clients.push(client);
+      
+      const opt = document.createElement('option');
+      opt.value = client.id;
+      opt.textContent = client.name;
+      document.getElementById('clientSelect').appendChild(opt);
+      document.getElementById('clientSelect').value = client.id;
+      
+      App.closeModal();
+      App.toast('Client added', 'success');
+      updatePreview();
+    }
+    
+    async function saveInvoice(status) {
+      const clientId = document.getElementById('clientSelect').value;
+      if (!clientId) {
+        App.toast('Please select a client', 'warning');
+        return;
+      }
+      
+      const subtotal = currentItems.reduce((sum, i) => sum + (i.quantity * i.rate), 0);
+      const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+      const discountRate = parseFloat(document.getElementById('discountRate').value) || 0;
+      const tax = (subtotal * taxRate) / 100;
+      const discount = (subtotal * discountRate) / 100;
+      const total = subtotal + tax - discount;
+      
+      const invoice = {
+        id: Utils.uuid(),
+        companyId: company.id,
+        clientId: clientId,
+        invoiceNumber: document.getElementById('invoiceNumber').value,
+        issueDate: document.getElementById('issueDate').value,
+        dueDate: document.getElementById('dueDate').value,
+        templateId: document.getElementById('templateSelect').value,
+        subtotal: subtotal,
+        tax: tax,
+        discount: discount,
+        total: total,
+        totalPaid: 0,
+        status: status,
+        notes: document.getElementById('invoiceNotes').value,
+        createdAt: new Date().toISOString()
+      };
+      
+      await DB.add('invoices', invoice);
+      
+      for (const item of currentItems) {
+        await DB.add('invoiceItems', {
+          id: Utils.uuid(),
+          invoiceId: invoice.id,
+          description: item.description,
+          quantity: item.quantity,
+          rate: item.rate,
+          amount: item.quantity * item.rate
+        });
+      }
+      
+      await DB.add('activities', {
+        id: Utils.uuid(),
+        companyId: company.id,
+        type: 'invoice_created',
+        title: 'Invoice ' + invoice.invoiceNumber + ' created',
+        description: 'Created for ' + (clients.find(c => c.id === clientId)?.name || 'Unknown'),
+        createdAt: new Date().toISOString()
+      });
+      
+      App.toast('Invoice ' + (status === 'draft' ? 'saved as draft' : 'sent'), 'success');
+      setTimeout(() => window.location.href = 'invoice-list.html', 1000);
+    }
+    
+    function exportPDF() {
+      const element = document.getElementById('invoicePreview');
+      const opt = {
+        margin: 0.5,
+        filename: 'invoice_' + document.getElementById('invoiceNumber').value + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+    
+    function printInvoice() {
+      window.print();
+    }
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!await Auth.requireAuth()) return;
+      await init();
+    });
+
+  </script>
+</body>
+</html>

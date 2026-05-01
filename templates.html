@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Templates - Smart Invoice AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            primary: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+  
+  <aside id="sidebar" class="sidebar fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-40">
+    <div class="flex flex-col h-full">
+      <div class="p-6 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+          <i class="fas fa-bolt text-white text-sm"></i>
+        </div>
+        <span class="font-bold text-lg">Smart Invoice</span>
+      </div>
+      <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+        <a href="dashboard.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-chart-pie w-5"></i> Dashboard</a>
+        <a href="invoice-create.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-plus-circle w-5"></i> Create Invoice</a>
+        <a href="invoice-list.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-file-invoice w-5"></i> Invoices</a>
+        <a href="clients.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-users w-5"></i> Clients</a>
+        <a href="templates.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-palette w-5"></i> Templates</a>
+        <a href="payments.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-credit-card w-5"></i> Payments</a>
+        <a href="analytics.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-chart-line w-5"></i> Analytics</a>
+        <a href="ai-assistant.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-robot w-5"></i> AI Assistant</a>
+      </nav>
+      <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+        <a href="settings.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-cog w-5"></i> Settings</a>
+      </div>
+    </div>
+  </aside>
+  
+  <div id="sidebarBackdrop" class="sidebar-backdrop lg:hidden"></div>
+  
+  <div class="lg:ml-64 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
+      <div class="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"><i class="fas fa-bars"></i></button>
+          <h1 class="text-xl font-semibold">Templates</h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <button id="themeToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"><i id="themeIcon" class="fas fa-moon text-gray-500"></i></button>
+          <div class="relative">
+            <button id="userMenuBtn" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <img id="userAvatar" src="" alt="" class="w-8 h-8 rounded-full">
+              <div class="hidden md:block text-left"><div id="userName" class="text-sm font-medium"></div><div id="userPlan" class="text-xs"></div></div>
+              <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+            </button>
+            <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+              <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700"><div id="userEmail" class="text-sm text-gray-600 dark:text-gray-400"></div></div>
+              <a href="settings.html" class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"><i class="fas fa-user text-gray-400 w-5"></i> Profile</a>
+              <a href="settings.html" class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"><i class="fas fa-cog text-gray-400 w-5"></i> Settings</a>
+              <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                <button id="logoutBtn" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"><i class="fas fa-sign-out-alt w-5"></i> Sign Out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <main class="flex-1 p-4 sm:p-6 lg:p-8">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold mb-2">Choose a Template</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Select a professional template for your invoices. Pro and Business plans include custom branding.</p>
+      </div>
+      
+      <div id="templatesGrid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+    </main>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    if (!Auth.requireAuth()) {}
+    
+    const templates = [
+      { id: 'modern', name: 'Modern', description: 'Clean and minimal design', color: 'from-blue-500 to-indigo-600', industry: 'technology', premium: false },
+      { id: 'classic', name: 'Classic', description: 'Traditional professional look', color: 'from-gray-600 to-gray-800', industry: 'legal', premium: false },
+      { id: 'creative', name: 'Creative', description: 'Bold and colorful', color: 'from-pink-500 to-rose-600', industry: 'design', premium: false },
+      { id: 'elegant', name: 'Elegant', description: 'Sophisticated and refined', color: 'from-amber-500 to-orange-600', industry: 'consulting', premium: true },
+      { id: 'minimal', name: 'Minimal', description: 'Ultra clean whitespace', color: 'from-slate-500 to-slate-700', industry: 'freelance', premium: true },
+      { id: 'corporate', name: 'Corporate', description: 'Enterprise-grade design', color: 'from-emerald-500 to-teal-600', industry: 'enterprise', premium: true },
+      { id: 'startup', name: 'Startup', description: 'Energetic and modern', color: 'from-violet-500 to-purple-600', industry: 'technology', premium: true },
+      { id: 'retail', name: 'Retail', description: 'Product-focused layout', color: 'from-cyan-500 to-blue-600', industry: 'retail', premium: true }
+    ];
+    
+    async function loadTemplates() {
+      const user = Auth.getUser();
+      const plan = user?.plan || 'free';
+      
+      const grid = document.getElementById('templatesGrid');
+      grid.innerHTML = templates.map(t => {
+        const isLocked = t.premium && plan === 'free';
+        const isSelected = user?.settings?.template === t.id;
+        
+        return '<div class="card overflow-hidden card-hover ' + (isSelected ? 'ring-2 ring-primary-500' : '') + '">' +
+          '<div class="h-32 bg-gradient-to-br ' + t.color + ' relative">' +
+            (isLocked ? '<div class="absolute inset-0 bg-black/50 flex items-center justify-center"><i class="fas fa-lock text-white text-2xl"></i></div>' : '') +
+            (isSelected ? '<div class="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center"><i class="fas fa-check text-primary-600"></i></div>' : '') +
+          '</div>' +
+          '<div class="p-6">' +
+            '<div class="flex items-center justify-between mb-2">' +
+              '<h3 class="font-semibold">' + t.name + '</h3>' +
+              (t.premium ? '<span class="badge badge-premium">PRO</span>' : '<span class="badge badge-free">FREE</span>') +
+            '</div>' +
+            '<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">' + t.description + '</p>' +
+            '<div class="flex items-center justify-between">' +
+              '<span class="text-xs text-gray-400">Best for: ' + Utils.capitalize(t.industry) + '</span>' +
+              (isLocked ? 
+                '<button onclick="App.toast(\'Upgrade to Pro to unlock this template\', \'warning\')" class="btn btn-secondary text-sm">Unlock</button>' :
+                '<button onclick="selectTemplate(\'' + t.id + '\')" class="btn ' + (isSelected ? 'btn-secondary' : 'btn-primary') + ' text-sm">' + (isSelected ? 'Selected' : 'Use') + '</button>'
+              ) +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+    
+    async function selectTemplate(templateId) {
+      const user = Auth.getUser();
+      if (!user.settings) user.settings = {};
+      user.settings.template = templateId;
+      Auth.setUser(user);
+      App.toast('Template updated', 'success');
+      loadTemplates();
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadTemplates);
+  </script>
+</body>
+</html>

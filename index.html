@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Invoice AI - AI-Powered Invoice Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            primary: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-sans antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+  
+  <!-- Navigation -->
+  <nav class="fixed w-full z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+            <i class="fas fa-bolt text-white text-sm"></i>
+          </div>
+          <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">Smart Invoice AI</span>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#features" class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">Features</a>
+          <a href="#pricing" class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">Pricing</a>
+          <a href="#templates" class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">Templates</a>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <button id="themeToggle" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            <i id="themeIcon" class="fas fa-moon"></i>
+          </button>
+          <a href="login.html" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition">Sign In</a>
+          <a href="login.html?register=1" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition shadow-lg shadow-primary-500/25">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-primary-50/50 to-purple-50/50 dark:from-primary-900/10 dark:to-purple-900/10"></div>
+    <div class="absolute top-20 right-0 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-72 h-72 bg-purple-400/20 rounded-full blur-3xl"></div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-4xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium mb-8 animate-fade-in">
+          <i class="fas fa-sparkles"></i>
+          <span>Now with GPT-4 Powered Invoice Creation</span>
+        </div>
+        
+        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 animate-fade-in-up delay-100">
+          Create Invoices with <br>
+          <span class="bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">AI Intelligence</span>
+        </h1>
+        
+        <p class="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-2xl mx-auto animate-fade-in-up delay-200">
+          Transform the way you bill clients. Use natural language, get smart suggestions, and automate your entire invoicing workflow with the power of artificial intelligence.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up delay-300">
+          <a href="login.html?register=1" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-2xl transition shadow-xl shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-0.5">
+            <span>Start Free Trial</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+          <a href="#demo" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-2xl transition">
+            <i class="fas fa-play-circle text-primary-500"></i>
+            <span>Watch Demo</span>
+          </a>
+        </div>
+        
+        <div class="mt-16 flex items-center justify-center gap-8 text-sm text-gray-500 dark:text-gray-400 animate-fade-in-up delay-400">
+          <span class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> No credit card required</span>
+          <span class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> 14-day free trial</span>
+          <span class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Cancel anytime</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="py-16 bg-gray-50 dark:bg-gray-800/50 border-y border-gray-200 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div class="text-center">
+          <div class="text-3xl md:text-4xl font-bold text-primary-600">50K+</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Invoices Created</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl md:text-4xl font-bold text-purple-600">$12M+</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Revenue Processed</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl md:text-4xl font-bold text-pink-600">10K+</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Active Users</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl md:text-4xl font-bold text-cyan-600">99.9%</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Uptime</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Everything You Need to <span class="gradient-text">Get Paid Faster</span></h2>
+        <p class="text-lg text-gray-600 dark:text-gray-300">A complete invoicing solution powered by artificial intelligence to streamline your billing workflow.</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="card p-8 card-hover">
+          <div class="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mb-6">
+            <i class="fas fa-wand-magic-sparkles text-primary-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">AI Invoice Creation</h3>
+          <p class="text-gray-600 dark:text-gray-400">Describe your services in plain English. Our AI generates professional invoices with smart item suggestions and accurate calculations.</p>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="card p-8 card-hover">
+          <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-6">
+            <i class="fas fa-users text-purple-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Client Management</h3>
+          <p class="text-gray-600 dark:text-gray-400">CRM-lite functionality with client history, payment tracking, and automated reminders to keep your relationships strong.</p>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="card p-8 card-hover">
+          <div class="w-12 h-12 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center mb-6">
+            <i class="fas fa-palette text-pink-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Smart Templates</h3>
+          <p class="text-gray-600 dark:text-gray-400">10+ professional templates with AI recommendations based on your industry. Custom branding with logo, colors, and fonts.</p>
+        </div>
+        
+        <!-- Feature 4 -->
+        <div class="card p-8 card-hover">
+          <div class="w-12 h-12 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center mb-6">
+            <i class="fas fa-credit-card text-cyan-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Payment Integration</h3>
+          <p class="text-gray-600 dark:text-gray-400">Accept payments via Stripe, PayPal, and Razorpay. Track partial payments and generate automatic receipts.</p>
+        </div>
+        
+        <!-- Feature 5 -->
+        <div class="card p-8 card-hover">
+          <div class="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-6">
+            <i class="fas fa-chart-line text-green-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Analytics & Reports</h3>
+          <p class="text-gray-600 dark:text-gray-400">Revenue dashboards with charts, overdue tracking, tax reports, and exports to QuickBooks and Xero.</p>
+        </div>
+        
+        <!-- Feature 6 -->
+        <div class="card p-8 card-hover">
+          <div class="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-6">
+            <i class="fas fa-robot text-orange-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">AI Assistant</h3>
+          <p class="text-gray-600 dark:text-gray-400">Invoice Coach for pricing, Follow-up Bot for reminders, Cash Flow Predictor, and Expense Matcher.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Demo Section -->
+  <section id="demo" class="py-24 bg-gray-50 dark:bg-gray-800/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-bold mb-6">Type Naturally, <span class="gradient-text">Invoice Instantly</span></h2>
+          <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">Just describe what you need. Our AI understands context, extracts details, and creates perfect invoices in seconds.</p>
+          
+          <div class="space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 mt-1">
+                <i class="fas fa-comment-dots text-primary-600 text-sm"></i>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-1">Natural Language Input</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">"Invoice TechCorp for website redesign $5000 due in 30 days"</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0 mt-1">
+                <i class="fas fa-brain text-purple-600 text-sm"></i>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-1">Smart Understanding</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">AI extracts client, services, amounts, and due dates automatically</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0 mt-1">
+                <i class="fas fa-file-invoice text-green-600 text-sm"></i>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-1">Professional Output</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Get a beautifully formatted invoice ready to send</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative">
+          <div class="absolute -inset-4 bg-gradient-to-r from-primary-500 to-purple-600 rounded-3xl opacity-20 blur-2xl"></div>
+          <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-gray-100 dark:bg-gray-800 px-4 py-3 flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
+              <div class="w-3 h-3 rounded-full bg-red-400"></div>
+              <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+              <div class="w-3 h-3 rounded-full bg-green-400"></div>
+              <span class="ml-2 text-xs text-gray-500">AI Invoice Creator</span>
+            </div>
+            <div class="p-6 space-y-4">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-user text-primary-600 text-xs"></i>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3 text-sm">
+                  Invoice GreenLeaf Solutions for logo design $1500 and brand guidelines $1000, due in 14 days
+                </div>
+              </div>
+              <div class="flex items-start gap-3 flex-row-reverse">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-robot text-white text-xs"></i>
+                </div>
+                <div class="bg-primary-50 dark:bg-primary-900/20 rounded-2xl rounded-tr-none px-4 py-3 text-sm border border-primary-100 dark:border-primary-800">
+                  <div class="flex items-center gap-2 mb-2">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    <span class="font-medium">Invoice created successfully!</span>
+                  </div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                    <p>Client: GreenLeaf Solutions</p>
+                    <p>Items: Logo Design ($1,500), Brand Guidelines ($1,000)</p>
+                    <p>Total: $2,750 (including tax)</p>
+                    <p>Due: March 15, 2024</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Templates Preview -->
+  <section id="templates" class="py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Beautiful <span class="gradient-text">Templates</span></h2>
+        <p class="text-lg text-gray-600 dark:text-gray-300">Choose from professionally designed templates or create your own branded look.</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="template-preview p-4 hover:border-primary-500 border-2 border-transparent transition">
+          <div class="h-full bg-white rounded border border-gray-200 p-4 flex flex-col">
+            <div class="flex justify-between items-start mb-4">
+              <div class="w-8 h-8 bg-primary-500 rounded"></div>
+              <span class="text-xs text-gray-400">INV-001</span>
+            </div>
+            <div class="space-y-2 flex-1">
+              <div class="h-2 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-2 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+              <div class="text-lg font-bold text-primary-600">$2,500</div>
+            </div>
+          </div>
+          <p class="text-center text-sm font-medium mt-3">Modern</p>
+        </div>
+        
+        <div class="template-preview p-4 hover:border-purple-500 border-2 border-transparent transition">
+          <div class="h-full bg-white rounded border border-gray-200 p-4 flex flex-col">
+            <div class="text-center mb-4">
+              <div class="text-lg font-bold">INVOICE</div>
+            </div>
+            <div class="space-y-2 flex-1">
+              <div class="h-2 bg-gray-200 rounded w-full"></div>
+              <div class="h-2 bg-gray-200 rounded w-2/3"></div>
+            </div>
+            <div class="mt-4 text-right">
+              <div class="text-lg font-bold">$1,800</div>
+            </div>
+          </div>
+          <p class="text-center text-sm font-medium mt-3">Minimal</p>
+        </div>
+        
+        <div class="template-preview p-4 hover:border-blue-500 border-2 border-transparent transition">
+          <div class="h-full bg-white rounded border border-gray-200 p-4 flex flex-col">
+            <div class="bg-blue-900 text-white p-2 -m-4 mb-4 rounded-t">
+              <div class="text-xs font-bold">PROFESSIONAL</div>
+            </div>
+            <div class="space-y-2 flex-1">
+              <div class="h-2 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-2 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div class="mt-4 pt-4 border-t-2 border-blue-900">
+              <div class="text-lg font-bold text-blue-900">$3,200</div>
+            </div>
+          </div>
+          <p class="text-center text-sm font-medium mt-3">Professional</p>
+        </div>
+        
+        <div class="template-preview p-4 hover:border-pink-500 border-2 border-transparent transition">
+          <div class="h-full bg-white rounded border border-gray-200 p-4 flex flex-col">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-6 h-6 bg-pink-500 rounded-full"></div>
+              <span class="font-bold text-pink-500">Creative</span>
+            </div>
+            <div class="space-y-2 flex-1">
+              <div class="h-2 bg-gray-200 rounded w-full"></div>
+              <div class="h-2 bg-gray-200 rounded w-3/4"></div>
+            </div>
+            <div class="mt-4">
+              <div class="text-lg font-bold text-pink-500">$4,100</div>
+            </div>
+          </div>
+          <p class="text-center text-sm font-medium mt-3">Creative</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="py-24 bg-gray-50 dark:bg-gray-800/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Simple, Transparent <span class="gradient-text">Pricing</span></h2>
+        <p class="text-lg text-gray-600 dark:text-gray-300">Start free and scale as you grow. No hidden fees.</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+        <!-- Free -->
+        <div class="pricing-card bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold mb-2">Free</h3>
+          <div class="text-4xl font-bold mb-1">$0</div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Forever free</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> 5 invoices/month</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> Basic templates</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> PDF export</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> Client management</li>
+          </ul>
+          <a href="login.html?register=1&plan=free" class="block w-full text-center py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Get Started</a>
+        </div>
+        
+        <!-- Pro -->
+        <div class="pricing-card bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold mb-2">Pro</h3>
+          <div class="text-4xl font-bold mb-1">$19</div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">per month</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> Unlimited invoices</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> AI features</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> Custom branding</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> All templates</li>
+          </ul>
+          <a href="login.html?register=1&plan=pro" class="block w-full text-center py-2.5 rounded-xl bg-primary-600 text-white font-medium hover:bg-primary-700 transition">Start Pro Trial</a>
+        </div>
+        
+        <!-- Business -->
+        <div class="pricing-card featured bg-white dark:bg-gray-900">
+          <h3 class="text-lg font-semibold mb-2">Business</h3>
+          <div class="text-4xl font-bold mb-1">$49</div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">per month</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> Everything in Pro</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> Team collaboration</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> API access</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> Advanced analytics</li>
+          </ul>
+          <a href="login.html?register=1&plan=business" class="block w-full text-center py-2.5 rounded-xl bg-gradient-to-r from-primary-600 to-purple-600 text-white font-medium hover:shadow-lg transition">Start Business Trial</a>
+        </div>
+        
+        <!-- Enterprise -->
+        <div class="pricing-card bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold mb-2">Enterprise</h3>
+          <div class="text-4xl font-bold mb-1">Custom</div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Contact us</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> White-label solution</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> Dedicated support</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> Custom integrations</li>
+            <li class="flex items-center gap-2 text-sm"><i class="fas fa-check text-green-500"></i> SLA guarantee</li>
+          </ul>
+          <a href="#contact" class="block w-full text-center py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Contact Sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-24">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="relative bg-gradient-to-br from-primary-600 to-purple-700 rounded-3xl p-12 md:p-16 text-center overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative">
+          <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Ready to Transform Your Invoicing?</h2>
+          <p class="text-lg text-primary-100 mb-8 max-w-2xl mx-auto">Join thousands of businesses using Smart Invoice AI to get paid faster and smarter.</p>
+          <a href="login.html?register=1" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-primary-600 font-semibold rounded-2xl hover:bg-primary-50 transition shadow-xl">
+            <span>Start Your Free Trial</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-800 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+              <i class="fas fa-bolt text-white text-xs"></i>
+            </div>
+            <span class="font-bold text-lg">Smart Invoice AI</span>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">AI-powered invoicing for modern businesses. Create, send, and track invoices with intelligence.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Product</h4>
+          <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+            <li><a href="#features" class="hover:text-primary-600 transition">Features</a></li>
+            <li><a href="#templates" class="hover:text-primary-600 transition">Templates</a></li>
+            <li><a href="#pricing" class="hover:text-primary-600 transition">Pricing</a></li>
+            <li><a href="#" class="hover:text-primary-600 transition">API</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Company</h4>
+          <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+            <li><a href="#" class="hover:text-primary-600 transition">About</a></li>
+            <li><a href="#" class="hover:text-primary-600 transition">Blog</a></li>
+            <li><a href="#" class="hover:text-primary-600 transition">Careers</a></li>
+            <li><a href="#" class="hover:text-primary-600 transition">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Legal</h4>
+          <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+            <li><a href="#" class="hover:text-primary-600 transition">Privacy</a></li>
+            <li><a href="#" class="hover:text-primary-600 transition">Terms</a></li>
+            <li><a href="#" class="hover:text-primary-600 transition">Security</a></li>
+            <li><a href="#" class="hover:text-primary-600 transition">GDPR</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-8 border-t border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-sm text-gray-500 dark:text-gray-400"> 2024 Smart Invoice AI. All rights reserved.</p>
+        <div class="flex items-center gap-4">
+          <a href="#" class="text-gray-400 hover:text-primary-600 transition"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="text-gray-400 hover:text-primary-600 transition"><i class="fab fa-github"></i></a>
+          <a href="#" class="text-gray-400 hover:text-primary-600 transition"><i class="fab fa-linkedin"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

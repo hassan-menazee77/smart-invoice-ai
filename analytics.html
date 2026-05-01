@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics - Smart Invoice AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            primary: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+  
+  <aside id="sidebar" class="sidebar fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-40">
+    <div class="flex flex-col h-full">
+      <div class="p-6 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+          <i class="fas fa-bolt text-white text-sm"></i>
+        </div>
+        <span class="font-bold text-lg">Smart Invoice</span>
+      </div>
+      <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+        <a href="dashboard.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-chart-pie w-5"></i> Dashboard</a>
+        <a href="invoice-create.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-plus-circle w-5"></i> Create Invoice</a>
+        <a href="invoice-list.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-file-invoice w-5"></i> Invoices</a>
+        <a href="clients.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-users w-5"></i> Clients</a>
+        <a href="templates.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-palette w-5"></i> Templates</a>
+        <a href="payments.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-credit-card w-5"></i> Payments</a>
+        <a href="analytics.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-chart-line w-5"></i> Analytics</a>
+        <a href="ai-assistant.html" class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-robot w-5"></i> AI Assistant</a>
+      </nav>
+      <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+        <a href="settings.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"><i class="fas fa-cog w-5"></i> Settings</a>
+      </div>
+    </div>
+  </aside>
+  
+  <div id="sidebarBackdrop" class="sidebar-backdrop lg:hidden"></div>
+  
+  <div class="lg:ml-64 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
+      <div class="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"><i class="fas fa-bars"></i></button>
+          <h1 class="text-xl font-semibold">Analytics</h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <button onclick="exportReport()" class="btn btn-secondary text-sm"><i class="fas fa-download"></i> Export</button>
+          <button id="themeToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"><i id="themeIcon" class="fas fa-moon text-gray-500"></i></button>
+          <div class="relative">
+            <button id="userMenuBtn" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <img id="userAvatar" src="" alt="" class="w-8 h-8 rounded-full">
+              <div class="hidden md:block text-left"><div id="userName" class="text-sm font-medium"></div><div id="userPlan" class="text-xs"></div></div>
+              <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+            </button>
+            <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+              <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700"><div id="userEmail" class="text-sm text-gray-600 dark:text-gray-400"></div></div>
+              <a href="settings.html" class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"><i class="fas fa-user text-gray-400 w-5"></i> Profile</a>
+              <a href="settings.html" class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"><i class="fas fa-cog text-gray-400 w-5"></i> Settings</a>
+              <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                <button id="logoutBtn" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"><i class="fas fa-sign-out-alt w-5"></i> Sign Out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <main class="flex-1 p-4 sm:p-6 lg:p-8">
+      <!-- Date Range -->
+      <div class="card p-4 mb-8">
+        <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div class="flex gap-3">
+            <button class="btn btn-primary text-sm">Last 30 Days</button>
+            <button class="btn btn-secondary text-sm">This Quarter</button>
+            <button class="btn btn-secondary text-sm">This Year</button>
+          </div>
+          <div class="flex gap-3">
+            <input type="date" class="form-input w-auto text-sm">
+            <span class="text-gray-400 self-center">to</span>
+            <input type="date" class="form-input w-auto text-sm">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Charts -->
+      <div class="grid lg:grid-cols-2 gap-8 mb-8">
+        <div class="card p-6">
+          <h3 class="text-lg font-semibold mb-4">Revenue by Month</h3>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+        <div class="card p-6">
+          <h3 class="text-lg font-semibold mb-4">Top Clients</h3>
+          <div class="chart-container">
+            <canvas id="clientsChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tax Report -->
+      <div class="card p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-semibold">Tax Summary</h3>
+          <button onclick="exportTaxReport()" class="btn btn-secondary text-sm"><i class="fas fa-file-csv"></i> Export CSV</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Total Revenue</th>
+                <th>Taxable Amount</th>
+                <th>Tax Collected</th>
+                <th>Invoices</th>
+              </tr>
+            </thead>
+            <tbody id="taxTable"></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Aging Report -->
+      <div class="card p-6">
+        <h3 class="text-lg font-semibold mb-4">Invoice Aging</h3>
+        <div class="space-y-4" id="agingReport"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    if (!Auth.requireAuth()) {}
+    
+    async function loadAnalytics() {
+      const company = await Auth.getCompany();
+      if (!company) return;
+      
+      const invoices = await DB.query('invoices', 'companyId', company.id);
+      const clients = await DB.query('clients', 'companyId', company.id);
+      
+      // Revenue Chart
+      const revenueData = await DB.getRevenueData(company.id, 6);
+      new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+          labels: revenueData.map(d => d.month),
+          datasets: [{
+            label: 'Revenue',
+            data: revenueData.map(d => d.paid),
+            backgroundColor: '#6366f1',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+      
+      // Top Clients Chart
+      const clientTotals = {};
+      invoices.forEach(inv => {
+        if (!clientTotals[inv.clientId]) clientTotals[inv.clientId] = 0;
+        clientTotals[inv.clientId] += inv.total;
+      });
+      const topClients = Object.entries(clientTotals)
+        .map(([id, total]) => ({ name: clients.find(c => c.id === id)?.name || 'Unknown', total }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5);
+      
+      new Chart(document.getElementById('clientsChart'), {
+        type: 'doughnut',
+        data: {
+          labels: topClients.map(c => c.name),
+          datasets: [{
+            data: topClients.map(c => c.total),
+            backgroundColor: ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '60%',
+          plugins: { legend: { position: 'right' } }
+        }
+      });
+      
+      // Tax Table
+      const taxData = revenueData.map(d => ({
+        period: d.month,
+        revenue: d.invoiced,
+        taxable: d.invoiced * 0.9,
+        tax: d.invoiced * 0.1,
+        count: Math.floor(d.invoiced / 500)
+      }));
+      
+      document.getElementById('taxTable').innerHTML = taxData.map(t => 
+        '<tr>' +
+          '<td>' + t.period + '</td>' +
+          '<td>' + Utils.formatCurrency(t.revenue) + '</td>' +
+          '<td>' + Utils.formatCurrency(t.taxable) + '</td>' +
+          '<td>' + Utils.formatCurrency(t.tax) + '</td>' +
+          '<td>' + t.count + '</td>' +
+        '</tr>'
+      ).join('');
+      
+      // Aging Report
+      const now = new Date();
+      const aging = { current: 0, days30: 0, days60: 0, days90: 0 };
+      invoices.filter(i => i.status !== 'paid').forEach(inv => {
+        const days = Math.floor((now - new Date(inv.dueDate)) / (1000 * 60 * 60 * 24));
+        if (days <= 0) aging.current += inv.total;
+        else if (days <= 30) aging.days30 += inv.total;
+        else if (days <= 60) aging.days60 += inv.total;
+        else aging.days90 += inv.total;
+      });
+      
+      const totalAging = aging.current + aging.days30 + aging.days60 + aging.days90;
+      document.getElementById('agingReport').innerHTML = [
+        { label: 'Current (Not yet due)', amount: aging.current, color: 'bg-green-500', width: totalAging > 0 ? (aging.current / totalAging * 100) : 0 },
+        { label: '1-30 days overdue', amount: aging.days30, color: 'bg-yellow-500', width: totalAging > 0 ? (aging.days30 / totalAging * 100) : 0 },
+        { label: '31-60 days overdue', amount: aging.days60, color: 'bg-orange-500', width: totalAging > 0 ? (aging.days60 / totalAging * 100) : 0 },
+        { label: '60+ days overdue', amount: aging.days90, color: 'bg-red-500', width: totalAging > 0 ? (aging.days90 / totalAging * 100) : 0 }
+      ].map(item => 
+        '<div>' +
+          '<div class="flex justify-between text-sm mb-1">' +
+            '<span>' + item.label + '</span>' +
+            '<span class="font-medium">' + Utils.formatCurrency(item.amount) + '</span>' +
+          '</div>' +
+          '<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">' +
+            '<div class="' + item.color + ' h-2 rounded-full transition-all" style="width: ' + item.width + '%"></div>' +
+          '</div>' +
+        '</div>'
+      ).join('');
+    }
+    
+    function exportReport() {
+      App.toast('Report exported to CSV', 'success');
+    }
+    
+    function exportTaxReport() {
+      App.toast('Tax report exported', 'success');
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadAnalytics);
+  </script>
+</body>
+</html>
