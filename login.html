@@ -218,9 +218,9 @@
     </div>
   </div>
 
-<script src="js/utils.js"></script>
-  <script src="js/db.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/utils.js?v=3"></script>
+  <script src="js/db.js?v=3"></script>
+  <script src="js/auth.js?v=3"></script>
   <script>
 // Setup dark mode immediately for login page
     (function setupTheme() {
@@ -280,7 +280,7 @@
         }
         
         if (!window.Auth) {
-          throw new Error('Authentication not loaded. Please refresh the page.');
+          throw new Error('الملفات لسه متحملتش من السيرفر (مشكلة Cache) أو مجلد js مش مرفوع بالكامل على GitHub. جرب تضغط Ctrl + F5');
         }
         
         await window.Auth.login(
@@ -313,7 +313,7 @@
         }
         
         if (!window.Auth) {
-          throw new Error('Authentication not loaded. Please refresh the page.');
+          throw new Error('الملفات لسه متحملتش من السيرفر (مشكلة Cache) أو مجلد js مش مرفوع بالكامل على GitHub. جرب تضغط Ctrl + F5');
         }
         
         await window.Auth.register(
