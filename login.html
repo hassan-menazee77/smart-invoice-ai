@@ -104,7 +104,7 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
             <div class="relative">
               <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            <input type="email" id="loginEmail" class="form-input pl-10" placeholder="you@company.com" required>
+            <input type="email" id="loginEmail" value="demo@smartinvoice.ai" class="form-input pl-10" placeholder="you@company.com" required>
             </div>
           </div>
           
@@ -112,7 +112,7 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
             <div class="relative">
               <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            <input type="password" id="loginPassword" class="form-input pl-10" placeholder="••••••••" required>
+            <input type="password" id="loginPassword" value="demo123" class="form-input pl-10" placeholder="••••••••" required>
               <button type="button" onclick="togglePassword('loginPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                 <i class="fas fa-eye"></i>
               </button>
@@ -225,7 +225,6 @@
   </div>
 
 <script src="js/utils.js"></script>
-  <script src="js/db.js"></script>
   <script src="js/auth.js"></script>
   <script>
 // Setup dark mode immediately for login page
@@ -252,14 +251,9 @@
       }
     }
     
-    // Wait for real database initialization
-    if (window.DB_READY) {
-      document.getElementById('dbLoading').style.display = 'none';
-    } else {
-      document.addEventListener('dbReady', () => {
-        document.getElementById('dbLoading').style.display = 'none';
-      });
-    }
+    // Hide loading and show login immediately
+    document.getElementById('dbLoading').style.display = 'none';
+    window.DB_READY = true;
     
     // Check if register param is present
     const urlParams = new URLSearchParams(window.location.search);
