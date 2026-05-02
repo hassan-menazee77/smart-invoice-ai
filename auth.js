@@ -28,6 +28,10 @@ const Auth = {
       console.log('User loaded from storage:', this.currentUser?.email);
     }
     
+    if (typeof DB !== 'undefined') {
+      await DB.ensureInit();
+    }
+
     // Mark DB as ready
     window.DB_READY = true;
     document.dispatchEvent(new Event('dbReady'));
@@ -35,21 +39,6 @@ const Auth = {
 
 async login(email, password) {
     console.log('Login attempt:', email);
-    
-    // In offline/demo mode, accept demo credentials
-    if (email === 'demo@smartinvoice.ai' && password === 'demo123') {
-      this.currentUser = {
-        id: 'demo-user-1',
-        email: 'demo@smartinvoice.ai',
-        name: 'Demo User',
-        plan: 'business',
-        settings: { template: 'modern' },
-        avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=6366f1&color=fff'
-      };
-      localStorage.setItem('user', JSON.stringify(this.currentUser));
-      console.log('Login successful (demo mode)');
-      return this.currentUser;
-    }
     
     // Try Supabase if available
     if (this.supabaseAvailable) {
@@ -76,10 +65,9 @@ async login(email, password) {
       }
     }
     
-    // Fallback: check localStorage
-    const stored = localStorage.getItem('users');
-    if (stored) {
-      const users = JSON.parse(stored);
+    // Fallback: check IndexedDB
+    if (typeof DB !== 'undefined') {
+      const users = await DB.getAll('users');
       const user = users.find(u => u.email === email && u.password === password);
       if (user) {
         this.currentUser = user;
@@ -94,8 +82,15 @@ async login(email, password) {
   async register(name, email, password, plan = 'free') {
     console.log('Register attempt:', name, email, plan);
     
+    if (typeof DB !== 'undefined') {
+      const users = await DB.getAll('users');
+      if (users.some(u => u.email === email)) {
+        throw new Error('Email already registered');
+      }
+    }
+
     const user = {
-      id: 'user-' + Date.now(),
+      id: Utils.uuid(),
       email,
       name,
       password, // In production, never store plain text passwords!
@@ -104,11 +99,9 @@ async login(email, password) {
       createdAt: new Date().toISOString()
     };
     
-    // Store in localStorage
-    const stored = localStorage.getItem('users');
-    const users = stored ? JSON.parse(stored) : [];
-    users.push(user);
-    localStorage.setItem('users', JSON.stringify(users));
+    if (typeof DB !== 'undefined') {
+      await DB.add('users', user);
+    }
     
     // Set as current user
     delete user.password; // Don't store password in session
@@ -136,25 +129,25 @@ async getCompany() {
     const user = this.getUser();
     if (!user) return null;
     
-    const stored = localStorage.getItem('companies');
-    let companies = stored ? JSON.parse(stored) : [];
-    let company = companies.find(c => c.user_id === user.id);
+    if (typeof DB === 'undefined') return null;
+    
+    let companies = await DB.getAll('companies');
+    let company = companies.find(c => c.userId === user.id || c.user_id === user.id);
     
     // Auto-create company if none exists
     if (!company && user) {
       company = {
-        id: 'company-' + Date.now(),
+        id: Utils.uuid(),
         name: (user.name || 'My') + "'s Company",
         email: user.email,
         phone: '',
         address: '',
         taxId: '',
         logo: '',
-        user_id: user.id,
-        created_at: new Date().toISOString()
+        userId: user.id,
+        createdAt: new Date().toISOString()
       };
-      companies.push(company);
-      localStorage.setItem('companies', JSON.stringify(companies));
+      await DB.add('companies', company);
       console.log('Auto-created company:', company);
     }
     

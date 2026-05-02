@@ -23,12 +23,6 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4">
-  
-  <!-- Loading Overlay -->
-  <div id="dbLoading" class="fixed inset-0 bg-white/90 dark:bg-gray-900/90 z-50 flex flex-col items-center justify-center">
-    <div class="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>
-    <p class="text-gray-600 dark:text-gray-400 font-medium">Initializing database...</p>
-  </div>
 
   <div class="w-full max-w-5xl grid lg:grid-cols-2 gap-0 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden">
 
@@ -225,6 +219,7 @@
   </div>
 
 <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
   <script src="js/auth.js"></script>
   <script>
 // Setup dark mode immediately for login page
@@ -250,10 +245,6 @@
         icon.className = isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-gray-500';
       }
     }
-    
-    // Hide loading and show login immediately
-    document.getElementById('dbLoading').style.display = 'none';
-    window.DB_READY = true;
     
     // Check if register param is present
     const urlParams = new URLSearchParams(window.location.search);
