@@ -262,7 +262,7 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     }
     
-    // Login handler
+// Login handler - wait for Auth to be ready
     document.getElementById('loginFormEl').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -272,7 +272,15 @@
       btn.disabled = true;
       
       try {
-        await Auth.login(
+        // Wait for Auth to be available
+        if (!window.Auth) {
+          await new Promise(resolve => {
+            if (window.Auth) resolve();
+            else window.addEventListener('authReady', resolve);
+          });
+        }
+        
+        await window.Auth.login(
           document.getElementById('loginEmail').value,
           document.getElementById('loginPassword').value
         );
@@ -284,7 +292,7 @@
       }
     });
     
-    // Register handler
+// Register handler - wait for Auth to be ready
     document.getElementById('registerFormEl').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -294,7 +302,15 @@
       btn.disabled = true;
       
       try {
-        await Auth.register(
+        // Wait for Auth to be available
+        if (!window.Auth) {
+          await new Promise(resolve => {
+            if (window.Auth) resolve();
+            else window.addEventListener('authReady', resolve);
+          });
+        }
+        
+        await window.Auth.register(
           document.getElementById('regName').value,
           document.getElementById('regEmail').value,
           document.getElementById('regPassword').value,

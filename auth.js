@@ -183,6 +183,10 @@ getSettings() {
 window.Auth = Auth;
 console.log('Auth object created and assigned to window.Auth');
 
+// Dispatch authReady event after everything is set up
+window.dispatchEvent(new Event('authReady'));
+console.log('authReady event dispatched');
+
 // Standalone functions for compatibility
 async function registerUser(email, password, name) {
   return Auth.register(name, email, password, 'free');
