@@ -124,114 +124,8 @@ smart-invoice-ai/
 - Arabic RTL support
 - Smooth animations
 
-## Configuration
 
-### Connecting to Supabase (Optional)
 
-1. Create a project at https://supabase.com
-2. Get your URL and anon key from Settings → API
-3. Update `js/supabase-client.js`:
-
-```javascript
-const SUPABASE_CONFIG = {
-  url: 'https://your-project.supabase.co',
-  authToken: 'your-anon-key'
-};
-```
-
-4. Enable Supabase in `js/auth.js`:
-
-```javascript
-const USE_SUPABASE = true;
-```
-
-### Database Schema (For Supabase/PostgreSQL)
-
-Run this SQL in Supabase SQL Editor:
-
-```sql
--- Users table
-create table users (
-  id uuid default gen_random_uuid() primary key,
-  email text unique not null,
-  name text,
-  role text default 'admin',
-  plan text default 'free',
-  created_at timestamp with time zone default now()
-);
-
--- Companies table
-create table companies (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references users(id),
-  name text not null,
-  slug text unique,
-  email text,
-  phone text,
-  address text,
-  logo text,
-  currency text default 'USD',
-  tax_rate numeric default 10,
-  theme jsonb,
-  created_at timestamp with time zone default now()
-);
-
--- Clients table
-create table clients (
-  id uuid default gen_random_uuid() primary key,
-  company_id uuid references companies(id),
-  name text not null,
-  email text,
-  phone text,
-  address text,
-  status text default 'active',
-  total_invoiced numeric default 0,
-  total_paid numeric default 0,
-  created_at timestamp with time zone default now()
-);
-
--- Invoices table
-create table invoices (
-  id uuid default gen_random_uuid() primary key,
-  company_id uuid references companies(id),
-  client_id uuid references clients(id),
-  invoice_number text unique,
-  status text default 'draft',
-  issue_date date,
-  due_date date,
-  subtotal numeric,
-  tax numeric default 0,
-  discount numeric default 0,
-  total numeric,
-  notes text,
-  template text,
-  created_at timestamp with time zone default now()
-);
-
--- Invoice Items table
-create table invoice_items (
-  id uuid default gen_random_uuid() primary key,
-  invoice_id uuid references invoices(id),
-  description text,
-  quantity numeric,
-  rate numeric,
-  amount numeric
-);
-
--- Payments table
-create table payments (
-  id uuid default gen_random_uuid() primary key,
-  invoice_id uuid references invoices(id),
-  amount numeric,
-  method text,
-  status text default 'pending',
-  transaction_id text,
-  paid_at timestamp with time zone,
-  created_at timestamp with time zone default now()
-);
-
--- Enable RLS and create policies for security
-```
 
 ## Usage
 
@@ -295,17 +189,7 @@ create table payments (
 
 ## Migration Checklist
 
-When moving to full-stack:
 
-- [ ] Set up Node.js/Express or Python/FastAPI backend
-- [ ] Configure Supabase with production keys
-- [ ] Enable RLS policies
-- [ ] Set up authentication with 2FA
-- [ ] Implement rate limiting
-- [ ] Add webhook handlers for payment providers
-- [ ] Set up email sending (SendGrid/Postmark)
-- [ ] Configure CDN for static assets
-- [ ] Set up backup strategy
 
 ## License
 
