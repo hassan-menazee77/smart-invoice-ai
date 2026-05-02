@@ -4,24 +4,6 @@
 
 Smart Invoice AI is a modern, AI-powered invoice management SaaS platform built entirely with client-side technologies. It uses CDN libraries for styling and functionality, making it easy to deploy without a complex build process.
 
-## Quick Start
-
-### Option 1: Open Directly in Browser (Recommended)
-
-1. Navigate to the `smart-invoice-ai/` folder
-2. Open `index.html` in any modern web browser
-3. The application will load all dependencies from CDN
-
-### Option 2: Simple HTTP Server
-
-If you want to serve the files locally:
-
-```bash
-# Python 3
-python -m http.server 8000
-
-# Then open http://localhost:8000
-```
 
 ## Technical Stack
 
