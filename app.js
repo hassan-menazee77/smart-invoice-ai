@@ -2,7 +2,7 @@
  * Smart Invoice AI - Main Application Module
  */
 
-const App = {
+var App = {
   sidebarOpen: false,
   currentPage: '',
   

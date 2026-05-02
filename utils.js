@@ -2,7 +2,7 @@
  * Smart Invoice AI - Utility Functions
  */
 
-const Utils = {
+var Utils = {
   // Generate UUID v4
   uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {

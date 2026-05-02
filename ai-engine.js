@@ -7,7 +7,7 @@
 const GEMINI_API_KEY = 'AIzaSyCPf8gmo6JXVltSsRJOJ94RXLCzLhr_7f4';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-const AIEngine = {
+var AIEngine = {
   // Industry-specific service suggestions
   industryServices: {
     technology: [

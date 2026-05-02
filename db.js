@@ -6,7 +6,7 @@
 
 const USE_SUPABASE = false; // Using local IndexedDB storage
 
-const DB = {
+var DB = {
   name: 'SmartInvoiceAI',
   version: 1,
   db: null,

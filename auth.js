@@ -6,7 +6,7 @@
 console.log('Loading auth.js...');
 
 // Make Auth available globally IMMEDIATELY
-const Auth = {
+var Auth = {
   supabaseAvailable: false,
   currentUser: null,
 
