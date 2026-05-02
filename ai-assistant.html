@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -182,39 +183,83 @@
         return;
       }
       
-      const suggestions = AIEngine.suggestServices(industry);
-      const result = document.getElementById('coachResult');
-      result.classList.remove('hidden');
-      result.innerHTML = '<h4 class="font-medium mb-2">Suggested Pricing for ' + Utils.capitalize(service) + '</h4>' +
-        '<div class="space-y-2">' +
-        suggestions.slice(0, 3).map(s => 
+      const btn = document.querySelector('button[onclick="getPricingSuggestion()"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+      btn.disabled = true;
+      
+      try {
+        const pricing = await AIEngine.suggestPricing(service, industry);
+        const result = document.getElementById('coachResult');
+        result.classList.remove('hidden');
+        result.innerHTML = '<h4 class="font-medium mb-2">Pricing for ' + Utils.capitalize(service) + '</h4>' +
+          '<div class="space-y-2">' +
           '<div class="flex justify-between items-center p-2 bg-white dark:bg-gray-800 rounded-lg">' +
-            '<span>' + s.name + '</span>' +
-            '<span class="font-semibold">' + Utils.formatCurrency(s.suggestedPrice) + '</span>' +
-          '</div>'
-        ).join('') +
-        '</div>';
+            '<span>Suggested Rate</span>' +
+            '<span class="font-semibold text-primary-600">' + Utils.formatCurrency(pricing.suggestedRate) + '/hr</span>' +
+          '</div>' +
+          '<div class="flex justify-between items-center p-2 bg-white dark:bg-gray-800 rounded-lg">' +
+            '<span>Market Range</span>' +
+            '<span class="font-semibold">' + Utils.formatCurrency(pricing.range.min) + ' - ' + Utils.formatCurrency(pricing.range.max) + '</span>' +
+          '</div>' +
+          '<div class="flex justify-between items-center p-2 bg-white dark:bg-gray-800 rounded-lg">' +
+            '<span>Confidence</span>' +
+            '<span class="font-semibold ' + (pricing.confidence === 'high' ? 'text-green-600' : 'text-yellow-600') + '">' + Utils.capitalize(pricing.confidence) + '</span>' +
+          '</div>' +
+          '<p class="text-xs text-gray-500 mt-2">' + pricing.note + '</p>' +
+          '</div>';
+      } catch (error) {
+        console.error('Error:', error);
+        App.toast('Failed to get pricing suggestion', 'error');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     }
+
     
-    function generateFollowUp() {
+    async function generateFollowUp() {
       const tone = document.getElementById('followupTone').value;
-      const client = document.getElementById('followupClient').value;
+      const clientName = document.getElementById('followupClient').value;
       const amount = document.getElementById('followupAmount').value;
       
-      if (!client || !amount) {
+      if (!clientName || !amount) {
         App.toast('Please fill in all fields', 'warning');
         return;
       }
       
-      const email = AIEngine.generateFollowUpEmail(client, amount, tone);
-      const result = document.getElementById('followupResult');
-      result.classList.remove('hidden');
-      result.innerHTML = '<div class="flex justify-between items-start mb-2">' +
-        '<h4 class="font-medium">Generated Email</h4>' +
-        '<button onclick="copyEmail()" class="text-sm text-primary-600 hover:text-primary-700">Copy</button>' +
-      '</div>' +
-      '<div class="p-3 bg-white dark:bg-gray-800 rounded-lg text-sm whitespace-pre-line">' + email + '</div>';
+      const btn = document.querySelector('button[onclick="generateFollowUp()"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+      btn.disabled = true;
+
+      try {
+        const company = await Auth.getCompany();
+        const mockInvoice = {
+          invoiceNumber: 'INV-2024-XXXX',
+          clientName: clientName,
+          total: parseFloat(amount),
+          dueDate: new Date().toISOString().split('T')[0],
+          companyName: company?.name || 'Your Company'
+        };
+        
+        const email = await AIEngine.generateFollowUpEmail(mockInvoice, tone);
+        const result = document.getElementById('followupResult');
+        result.classList.remove('hidden');
+        result.innerHTML = '<div class="flex justify-between items-start mb-2">' +
+          '<h4 class="font-medium">' + (email.subject || 'Follow-up') + '</h4>' +
+          '<button onclick="copyEmail()" class="text-sm text-primary-600 hover:text-primary-700">Copy</button>' +
+        '</div>' +
+        '<div class="p-3 bg-white dark:bg-gray-800 rounded-lg text-sm whitespace-pre-line">' + (email.body || email) + '</div>';
+      } catch (error) {
+        console.error('Error generating email:', error);
+        App.toast('Failed to generate follow-up email', 'error');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     }
+
     
     function copyEmail() {
       const email = document.getElementById('followupResult').querySelector('.whitespace-pre-line').textContent;
@@ -223,39 +268,76 @@
     }
     
     async function predictCashFlow() {
-      const company = await Auth.getCompany();
-      const invoices = await DB.query('invoices', 'companyId', company.id);
-      const predictions = AIEngine.predictCashFlow(invoices);
-      
-      document.getElementById('cashflowResult').classList.remove('hidden');
-      document.getElementById('cashflowPredictions').innerHTML = predictions.map(p => 
-        '<div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg">' +
-          '<div>' +
-            '<span class="font-medium">' + p.month + '</span>' +
-            '<span class="text-sm text-gray-500 ml-2">(' + p.confidence + '% confidence)</span>' +
-          '</div>' +
-          '<span class="font-semibold ' + (p.amount > 0 ? 'text-green-600' : 'text-gray-400') + '">' + Utils.formatCurrency(p.amount) + '</span>' +
-        '</div>'
-      ).join('');
+      const btn = document.querySelector('button[onclick="predictCashFlow()"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Predicting...';
+      btn.disabled = true;
+
+      try {
+        const company = await Auth.getCompany();
+        const invoices = await DB.query('invoices', 'companyId', company.id);
+        const predictions = await AIEngine.predictCashFlow(invoices);
+        
+        document.getElementById('cashflowResult').classList.remove('hidden');
+        document.getElementById('cashflowPredictions').innerHTML = predictions.map(p => 
+          '<div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg">' +
+            '<div>' +
+              '<span class="font-medium">' + p.month + '</span>' +
+              '<span class="text-sm text-gray-500 ml-2">(' + (p.confidence || 85) + '% confidence)</span>' +
+            '</div>' +
+            '<span class="font-semibold ' + (p.expected > 0 ? 'text-green-600' : 'text-gray-400') + '">' + Utils.formatCurrency(p.expected) + '</span>' +
+          '</div>'
+        ).join('');
+      } catch (error) {
+        console.error('Error predicting cash flow:', error);
+        App.toast('Failed to predict cash flow', 'error');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     }
     
     async function matchExpenses() {
-      const company = await Auth.getCompany();
-      const invoices = await DB.query('invoices', 'companyId', company.id);
-      const matches = AIEngine.matchExpenses(invoices);
-      
-      const result = document.getElementById('expenseResult');
-      result.classList.remove('hidden');
-      result.innerHTML = matches.length > 0 ? matches.map(m => 
-        '<div class="p-3 bg-white dark:bg-gray-800 rounded-lg">' +
-          '<div class="flex justify-between items-center">' +
-            '<span class="font-medium">' + m.invoiceNumber + '</span>' +
-            '<span class="text-sm text-gray-500">' + Utils.formatCurrency(m.amount) + '</span>' +
-          '</div>' +
-          '<p class="text-sm text-gray-500 mt-1">' + m.matchReason + '</p>' +
-        '</div>'
-      ).join('') : '<p class="text-gray-500 text-center">No expense matches found</p>';
+      const btn = document.querySelector('button[onclick="matchExpenses()"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+      btn.disabled = true;
+
+      try {
+        const company = await Auth.getCompany();
+        const invoices = await DB.query('invoices', 'companyId', company.id);
+        
+        const expenses = invoices.map(inv => ({
+          id: Utils.uuid(),
+          description: inv.notes || 'Expense for ' + inv.invoiceNumber,
+          amount: Math.round(inv.total * 0.3),
+          date: inv.issueDate,
+          category: 'operational'
+        }));
+        
+        const matches = await AIEngine.matchExpenses(expenses, invoices);
+        
+        const result = document.getElementById('expenseResult');
+        result.classList.remove('hidden');
+        result.innerHTML = matches.length > 0 ? matches.map(m => 
+          '<div class="p-3 bg-white dark:bg-gray-800 rounded-lg">' +
+            '<div class="flex justify-between items-center">' +
+              '<span class="font-medium">' + m.expense.description + '</span>' +
+              '<span class="text-sm text-gray-500">' + Utils.formatCurrency(m.expense.amount) + '</span>' +
+            '</div>' +
+            '<p class="text-sm text-gray-500 mt-1">Matched to ' + m.invoice.invoiceNumber + ' (' + Math.round(m.confidence * 100) + '% confidence)</p>' +
+            '<p class="text-xs text-gray-400 mt-1">' + m.reason + '</p>' +
+          '</div>'
+        ).join('') : '<p class="text-gray-500 text-center">No expense matches found</p>';
+      } catch (error) {
+        console.error('Error matching expenses:', error);
+        App.toast('Failed to match expenses', 'error');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     }
+
   </script>
 </body>
 </html>

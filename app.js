@@ -6,9 +6,26 @@ const App = {
   sidebarOpen: false,
   currentPage: '',
   
-  async init() {
-    // Initialize auth
-    await Auth.init();
+async init() {
+    try {
+      // Wait for DB initialization if not ready
+      if (!window.DB_READY) {
+        await new Promise(resolve => {
+          if (window.DB_READY) return resolve();
+          document.addEventListener('dbReady', resolve, { once: true });
+          setTimeout(resolve, 1000);
+        });
+      }
+      
+      // Initialize auth (only if Auth is defined)
+      if (typeof Auth !== 'undefined' && Auth.init) {
+        await Auth.init();
+      } else {
+        console.warn('Auth module not loaded yet');
+      }
+    } catch (err) {
+      console.warn('Auth init skipped:', err.message);
+    }
     
     // Setup theme
     this.setupTheme();
@@ -35,14 +52,23 @@ const App = {
     this.highlightCurrentPage();
   },
 
-  setupTheme() {
+setupTheme() {
+    // Check localStorage first, then system preference, default to light
     const saved = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    if (saved === 'dark' || (!saved && prefersDark)) {
+    // Apply saved theme or default to light (not dark)
+    if (saved === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (saved === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else if (prefersDark) {
+      // Only use system preference if nothing saved
       document.documentElement.classList.add('dark');
     }
+    // Default is light mode (no dark class)
     
+    // Theme toggle button
     document.getElementById('themeToggle')?.addEventListener('click', () => {
       document.documentElement.classList.toggle('dark');
       const isDark = document.documentElement.classList.contains('dark');
@@ -62,7 +88,7 @@ const App = {
     }
   },
 
-  setupNavigation() {
+setupNavigation() {
     // Mobile menu toggle
     document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
       this.toggleSidebar();
@@ -81,9 +107,11 @@ const App = {
       userMenu?.classList.add('hidden');
     });
     
-    // Logout
+    // Logout (only if Auth is defined)
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
-      Auth.logout();
+      if (typeof Auth !== 'undefined' && Auth.logout) {
+        Auth.logout();
+      }
     });
   },
 
@@ -151,18 +179,27 @@ const App = {
     });
   },
 
-  openModal(content, title = '') {
+openModal(content, title = '') {
     const overlay = document.getElementById('modalOverlay');
     const titleEl = document.getElementById('modalTitle');
     const bodyEl = document.getElementById('modalBody');
+    const modalContent = overlay?.querySelector('.modal-content');
     
     if (titleEl) titleEl.textContent = title;
-    if (bodyEl) bodyEl.innerHTML = content;
+    if (bodyEl && content) bodyEl.innerHTML = content;
+    // If no content provided, just show existing modal content
     if (overlay) overlay.classList.add('active');
   },
 
   closeModal() {
-    document.getElementById('modalOverlay')?.classList.remove('active');
+    const overlay = document.getElementById('modalOverlay');
+    if (overlay) {
+      overlay.classList.remove('active');
+      // Reset any form fields inside the modal if they exist
+      overlay.querySelectorAll('input, textarea, select').forEach(el => {
+        if (el.type !== 'select-one') el.value = '';
+      });
+    }
   },
 
   setupRTL() {
@@ -176,8 +213,8 @@ const App = {
     localStorage.setItem('rtl', !isRTL);
   },
 
-  async updateAuthUI() {
-    const user = Auth.getUser();
+async updateAuthUI() {
+    const user = typeof Auth !== 'undefined' ? Auth.getUser() : null;
     const authElements = document.querySelectorAll('[data-auth]');
     const guestElements = document.querySelectorAll('[data-guest]');
     
@@ -191,11 +228,11 @@ const App = {
       const avatarEl = document.getElementById('userAvatar');
       const planEl = document.getElementById('userPlan');
       
-      if (nameEl) nameEl.textContent = user.name;
-      if (emailEl) emailEl.textContent = user.email;
-      if (avatarEl) avatarEl.src = user.avatar;
-      if (planEl) {
-        planEl.textContent = Utils.capitalize(user.plan);
+      if (nameEl && user.name) nameEl.textContent = user.name;
+      if (emailEl && user.email) emailEl.textContent = user.email;
+      if (avatarEl && user.avatar) avatarEl.src = user.avatar;
+      if (planEl && user.plan) {
+        planEl.textContent = typeof Utils !== 'undefined' ? Utils.capitalize(user.plan) : user.plan;
         planEl.className = `text-xs font-medium px-2 py-0.5 rounded-full ${
           user.plan === 'business' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' :
           user.plan === 'pro' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
@@ -234,7 +271,7 @@ const App = {
     if (el) el.innerHTML = content;
   },
 
-  formatStatus(status) {
+formatStatus(status) {
     const styles = {
       paid: 'badge-success',
       pending: 'badge-warning',
@@ -245,23 +282,48 @@ const App = {
       inactive: 'badge-danger',
       cancelled: 'badge-danger'
     };
-    return `<span class="badge ${styles[status] || 'badge-info'}">${Utils.capitalize(status)}</span>`;
+    const displayStatus = typeof Utils !== 'undefined' ? Utils.capitalize(status) : (status ? status.charAt(0).toUpperCase() + status.slice(1) : status);
+    return `<span class="badge ${styles[status] || 'badge-info'}">${displayStatus}</span>`;
   },
 
   confirm(message, onConfirm, onCancel) {
-    const content = `
-      <p class="text-gray-600 dark:text-gray-300 mb-6">${message}</p>
-      <div class="flex justify-end gap-3">
-        <button onclick="App.closeModal(); ${onCancel ? `(${onCancel})()` : ''}" class="btn btn-secondary">Cancel</button>
-        <button onclick="App.closeModal(); (${onConfirm})();" class="btn btn-danger">Confirm</button>
-      </div>
-    `;
-    this.openModal(content, 'Confirm Action');
+    let overlay = document.getElementById('confirmOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'confirmOverlay';
+      overlay.className = 'modal-overlay';
+      overlay.style.zIndex = '100'; // Make sure it's above other modals
+      overlay.innerHTML = `
+        <div class="modal-content p-6 max-w-sm">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Confirm Action</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-6" id="confirmMessage"></p>
+          <div class="flex justify-end gap-3">
+            <button id="confirmCancelBtn" class="btn btn-secondary">Cancel</button>
+            <button id="confirmOkBtn" class="btn btn-danger">Confirm</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+    
+    document.getElementById('confirmMessage').textContent = message;
+    
+    document.getElementById('confirmCancelBtn').onclick = () => {
+      overlay.classList.remove('active');
+      if (onCancel) onCancel();
+    };
+    
+    document.getElementById('confirmOkBtn').onclick = () => {
+      overlay.classList.remove('active');
+      if (onConfirm) onConfirm();
+    };
+    
+    overlay.classList.add('active');
   },
 
-  async loadCompanyData() {
-    const company = await Auth.getCompany();
-    const settings = await Auth.getSettings();
+async loadCompanyData() {
+    const company = typeof Auth !== 'undefined' ? await Auth.getCompany() : null;
+    const settings = typeof Auth !== 'undefined' ? await Auth.getSettings() : null;
     return { company, settings };
   }
 };

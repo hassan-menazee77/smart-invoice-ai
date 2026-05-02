@@ -118,12 +118,12 @@
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary Color</label>
-              <div class="flex gap-3">
-                <button onclick="setBrandColor('#6366f1')" class="w-10 h-10 rounded-full bg-[#6366f1] ring-2 ring-offset-2 ring-transparent hover:ring-gray-300 transition"></button>
-                <button onclick="setBrandColor('#8b5cf6')" class="w-10 h-10 rounded-full bg-[#8b5cf6] ring-2 ring-offset-2 ring-transparent hover:ring-gray-300 transition"></button>
-                <button onclick="setBrandColor('#ec4899')" class="w-10 h-10 rounded-full bg-[#ec4899] ring-2 ring-offset-2 ring-transparent hover:ring-gray-300 transition"></button>
-                <button onclick="setBrandColor('#10b981')" class="w-10 h-10 rounded-full bg-[#10b981] ring-2 ring-offset-2 ring-transparent hover:ring-gray-300 transition"></button>
-                <button onclick="setBrandColor('#f59e0b')" class="w-10 h-10 rounded-full bg-[#f59e0b] ring-2 ring-offset-2 ring-transparent hover:ring-gray-300 transition"></button>
+              <div class="flex gap-3" id="colorButtons">
+                <button type="button" onclick="setBrandColor('#6366f1')" data-color="#6366f1" class="w-10 h-10 rounded-full bg-[#6366f1] ring-2 ring-offset-2 ring-transparent hover:ring-gray-400 transition"></button>
+                <button type="button" onclick="setBrandColor('#8b5cf6')" data-color="#8b5cf6" class="w-10 h-10 rounded-full bg-[#8b5cf6] ring-2 ring-offset-2 ring-transparent hover:ring-gray-400 transition"></button>
+                <button type="button" onclick="setBrandColor('#ec4899')" data-color="#ec4899" class="w-10 h-10 rounded-full bg-[#ec4899] ring-2 ring-offset-2 ring-transparent hover:ring-gray-400 transition"></button>
+                <button type="button" onclick="setBrandColor('#10b981')" data-color="#10b981" class="w-10 h-10 rounded-full bg-[#10b981] ring-2 ring-offset-2 ring-transparent hover:ring-gray-400 transition"></button>
+                <button type="button" onclick="setBrandColor('#f59e0b')" data-color="#f59e0b" class="w-10 h-10 rounded-full bg-[#f59e0b] ring-2 ring-offset-2 ring-transparent hover:ring-gray-400 transition"></button>
               </div>
             </div>
             <div>
@@ -208,9 +208,32 @@
     
     let companyData = null;
     
-    async function loadSettings() {
-      const company = await Auth.getCompany();
-      if (!company) return;
+async function loadSettings() {
+      let company = await Auth.getCompany();
+      const user = Auth.getUser();
+      
+      // Create default company if none exists
+      if (!company && user) {
+        company = {
+          id: 'company-' + Date.now(),
+          user_id: user.id,
+          name: (user.name || 'My') + "'s Company",
+          email: user.email || '',
+          phone: '',
+          address: '',
+          taxId: '',
+          logo: '',
+          createdAt: new Date().toISOString()
+        };
+        
+        const stored = localStorage.getItem('companies');
+        const companies = stored ? JSON.parse(stored) : [];
+        companies.push(company);
+        localStorage.setItem('companies', JSON.stringify(companies));
+        console.log('Auto-created company:', company);
+      }
+      
+if (!company) return;
       companyData = company;
       
       document.getElementById('companyName').value = company.name || '';
@@ -220,9 +243,15 @@
       document.getElementById('companyTaxId').value = company.taxId || '';
       document.getElementById('companyLogo').value = company.logo || '';
       
-      const user = Auth.getUser();
+      // Reuse existing user variable
       document.getElementById('currentPlan').textContent = Utils.capitalize(user.plan || 'free');
       
+      // Highlight saved color
+      const savedColor = (companyData.theme && companyData.theme.primary) || (user.settings && user.settings.brandColor);
+      if (savedColor) {
+        updateColorSelection(savedColor);
+      }
+
       const settings = await DB.get('settings', company.id);
       if (settings) {
         document.getElementById('defaultCurrency').value = settings.currency || 'USD';
@@ -233,7 +262,7 @@
     
     document.getElementById('companyForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const updated = {
+      companyData = {
         ...companyData,
         name: document.getElementById('companyName').value,
         email: document.getElementById('companyEmail').value,
@@ -241,7 +270,7 @@
         address: document.getElementById('companyAddress').value,
         taxId: document.getElementById('companyTaxId').value
       };
-      await DB.put('companies', updated);
+      await DB.put('companies', companyData);
       App.toast('Company profile updated', 'success');
     });
     
@@ -250,15 +279,33 @@
       if (!user.settings) user.settings = {};
       user.settings.brandColor = color;
       Auth.setUser(user);
+      
+      if (!companyData.theme) companyData.theme = {};
+      companyData.theme.primary = color;
+      await DB.put('companies', companyData);
+      
+      updateColorSelection(color);
       App.toast('Brand color updated', 'success');
     }
     
+    function updateColorSelection(color) {
+      document.querySelectorAll('#colorButtons button').forEach(btn => {
+        if (btn.dataset.color === color) {
+          btn.classList.remove('ring-transparent');
+          btn.classList.add('ring-gray-500', 'dark:ring-gray-300');
+        } else {
+          btn.classList.add('ring-transparent');
+          btn.classList.remove('ring-gray-500', 'dark:ring-gray-300');
+        }
+      });
+    }
+
     async function saveBranding() {
-      const updated = {
+      companyData = {
         ...companyData,
         logo: document.getElementById('companyLogo').value
       };
-      await DB.put('companies', updated);
+      await DB.put('companies', companyData);
       App.toast('Branding saved', 'success');
     }
     

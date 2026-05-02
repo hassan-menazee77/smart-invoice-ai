@@ -1,14 +1,19 @@
 /**
- * Smart Invoice AI - IndexedDB Database Layer
- * Simulates PostgreSQL backend with client-side persistence
+ * Smart Invoice AI - Database Layer
+ * Supports both IndexedDB (local) and Supabase (cloud) backends
+ * Set USE_SUPABASE = true to enable Supabase backend
  */
+
+const USE_SUPABASE = false; // Using local IndexedDB storage
 
 const DB = {
   name: 'SmartInvoiceAI',
   version: 1,
   db: null,
+  _seeding: false,
 
   stores: {
+
     users: { keyPath: 'id', indexes: ['email', 'role'] },
     companies: { keyPath: 'id', indexes: ['userId', 'slug'] },
     clients: { keyPath: 'id', indexes: ['companyId', 'email', 'status'] },
@@ -121,8 +126,13 @@ const DB = {
   },
 
   async seed() {
-    const count = await this.getAll('users');
-    if (count.length > 0) return;
+    if (this._seeding) return;
+    this._seeding = true;
+    
+    try {
+      const count = await this.getAll('users');
+      if (count.length > 0) return;
+
 
     const now = new Date().toISOString();
     const companyId = Utils.uuid();
@@ -216,7 +226,11 @@ const DB = {
       autoReminders: true, reminderDays: [7, 3, 1],
       emailNotifications: true, darkMode: false, rtl: false, createdAt: now
     });
+    } finally {
+      this._seeding = false;
+    }
   },
+
 
   async getDashboardStats(companyId) {
     const invoices = await this.query('invoices', 'companyId', companyId);
@@ -277,15 +291,17 @@ const DB = {
     };
   },
 
-  async getInvoiceFull(invoiceId) {
+async getInvoiceFull(invoiceId) {
     const invoice = await this.get('invoices', invoiceId);
     if (!invoice) return null;
     const items = await this.query('invoiceItems', 'invoiceId', invoiceId);
     const payments = await this.query('payments', 'invoiceId', invoiceId);
     const client = await this.get('clients', invoice.clientId);
     const company = await this.get('companies', invoice.companyId);
+    // Fetch template
+    const template = invoice.template ? await this.get('templates', invoice.template) : await this.get('templates', 'modern');
     const totalPaid = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
-    return { ...invoice, items, payments, client, company, totalPaid, balance: invoice.total - totalPaid };
+    return { ...invoice, items, payments, client, company, template, totalPaid, balance: invoice.total - totalPaid };
   },
 
   async reset() {
@@ -301,7 +317,39 @@ const DB = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
-  try { await DB.init(); await DB.seed(); console.log('DB ready'); }
-  catch (err) { console.error('DB init failed:', err); }
-});
+// Initialize database on load with proper error handling
+let _dbInitPromise = null;
+
+async function initDatabase() {
+  // Prevent multiple concurrent initializations
+  if (_dbInitPromise) return _dbInitPromise;
+  
+  _dbInitPromise = (async () => {
+    console.log('Initializing database...');
+    try {
+      await DB.init();
+      await DB.seed();
+      console.log('Database ready');
+      window.DB_READY = true;
+      document.dispatchEvent(new CustomEvent('dbReady'));
+      return true;
+    } catch (err) {
+      console.error('Database initialization failed:', err);
+      window.DB_READY = false;
+      // Show error to user if element exists
+      const errorEl = document.getElementById('dbLoading') || document.getElementById('initError');
+      if (errorEl) {
+        errorEl.innerHTML = '<div class="text-center p-4">' +
+          '<p class="text-red-600 font-medium mb-2">Database initialization failed</p>' +
+          '<p class="text-sm text-gray-500 mb-4">' + err.message + '</p>' +
+          '<button onclick="location.reload()" class="btn btn-primary">Retry</button></div>';
+      }
+      return false;
+    }
+  })();
+  
+  return _dbInitPromise;
+}
+
+// Auto-initialize when script loads
+initDatabase();

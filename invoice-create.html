@@ -4,6 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Invoice - Smart Invoice AI</title>
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        const isDark = savedTheme ? savedTheme === 'dark' : true;
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -80,7 +93,6 @@
     </header>
     
     <main class="flex-1 p-4 sm:p-6 lg:p-8">
-      <!-- AI Input -->
       <div class="card p-6 mb-8">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
@@ -100,7 +112,6 @@
       </div>
       
       <div class="grid xl:grid-cols-2 gap-8">
-        <!-- Form -->
         <div class="space-y-6">
           <div class="card p-6">
             <h3 class="text-lg font-semibold mb-4">Client</h3>
@@ -121,7 +132,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Template</label>
-                <select id="templateSelect" class="form-input"></select>
+                <select id="templateSelect" class="form-input" onchange="updatePreview()"></select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Date</label>
@@ -186,7 +197,6 @@
           </div>
         </div>
         
-        <!-- Preview -->
         <div class="xl:sticky xl:top-24">
           <div class="card p-6">
             <div class="flex items-center justify-between mb-4">
@@ -203,43 +213,79 @@
     </main>
   </div>
   
-  <div id="modalOverlay" class="modal-overlay">
-    <div class="modal-content p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold">Add Client</h3>
-        <button onclick="App.closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="space-y-4">
-        <input type="text" id="newClientName" class="form-input" placeholder="Client Name">
-        <input type="email" id="newClientEmail" class="form-input" placeholder="Email">
-        <input type="tel" id="newClientPhone" class="form-input" placeholder="Phone">
-        <input type="text" id="newClientAddress" class="form-input" placeholder="Address">
-        <button onclick="addClient()" class="w-full btn btn-primary">Add Client</button>
+  <div id="clientModal" class="fixed inset-0 z-50 hidden" style="background: rgba(0,0,0,0.5);">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6 relative border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Client</h3>
+          <button type="button" onclick="closeClientModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <input type="text" id="newClientName" class="form-input w-full" placeholder="Client Name">
+          <input type="email" id="newClientEmail" class="form-input w-full" placeholder="Email">
+          <input type="tel" id="newClientPhone" class="form-input w-full" placeholder="Phone">
+          <input type="text" id="newClientAddress" class="form-input w-full" placeholder="Address">
+          <button type="button" id="saveClientBtn" onclick="addClient()" class="w-full py-2.5 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition shadow-lg hover:shadow-xl active:scale-95 flex justify-center items-center gap-2">
+            Add Client
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="js/utils.js"></script>
+<script src="js/utils.js"></script>
   <script src="js/db.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/ai-engine.js"></script>
   <script src="js/app.js"></script>
   <script>
-    let company, clients, templates, currentItems = [];
+    let company, clients = [], templates, currentItems = [];
 
-    
-    async function init() {
-      company = await Auth.getCompany();
-      if (!company) return;
+async function init() {
+      console.log('Init started...');
       
-      document.getElementById('invoiceNumber').value = Utils.generateInvoiceNumber();
+      const user = Auth.getUser();
+      console.log('User:', user);
+      
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      company = await Auth.getCompany();
+      console.log('Company from DB:', company);
+
+      // If no company in DB, create one
+      if (!company) {
+        console.log('Creating new company...');
+        company = {
+          id: Utils.uuid(),
+          userId: user.id,
+          name: (user.name || user.email.split('@')[0]) + ' Company',
+          email: user.email,
+          createdAt: new Date().toISOString()
+        };
+        await DB.add('companies', company);
+        console.log('Auto-created company in DB:', company);
+      }
+      
+      document.getElementById('invoiceNumber').value = 'INV-' + Date.now();
       document.getElementById('issueDate').valueAsDate = new Date();
       const due = new Date();
       due.setDate(due.getDate() + 30);
       document.getElementById('dueDate').valueAsDate = due;
       
-      clients = await DB.query('clients', 'companyId', company.id);
+      try {
+        clients = await DB.query('clients', 'companyId', company.id) || [];
+      } catch (e) {
+        console.error('Error loading clients:', e);
+        clients = [];
+      }
+      
       const select = document.getElementById('clientSelect');
+      select.innerHTML = '<option value="">Select a client...</option>';
       clients.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
@@ -247,11 +293,19 @@
         select.appendChild(opt);
       });
       
-      templates = await DB.getAll('templates');
-      document.getElementById('templateSelect').innerHTML = templates.map(t => '<option value="' + t.id + '">' + t.name + '</option>').join('');
+      try {
+        templates = await DB.getAll('templates') || [];
+      } catch (e) {
+        console.error('Error loading templates:', e);
+        templates = [];
+      }
+      
+      const templateSelect = document.getElementById('templateSelect');
+      if (templateSelect && templates.length > 0) {
+        templateSelect.innerHTML = templates.map(t => '<option value="' + t.id + '"' + (t.isDefault ? ' selected' : '') + '>' + t.name + '</option>').join('');
+      }
       
       addItem();
-      loadSuggestions();
       updatePreview();
     }
     
@@ -309,6 +363,9 @@
     function updatePreview() {
       const clientId = document.getElementById('clientSelect').value;
       const client = clients.find(c => c.id === clientId);
+      const templateId = document.getElementById('templateSelect')?.value;
+      const template = templates?.find(t => t.id === templateId);
+      const primaryColor = template?.colors?.primary || '#6366f1';
       const subtotal = currentItems.reduce((sum, i) => sum + (i.quantity * i.rate), 0);
       const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
       const discountRate = parseFloat(document.getElementById('discountRate').value) || 0;
@@ -325,24 +382,27 @@
         '</tr>'
       ).join('');
       
+      // Change top border of the preview box
+      document.getElementById('invoicePreview').style.borderTop = '6px solid ' + primaryColor;
+
       document.getElementById('invoicePreview').innerHTML = 
         '<div class="flex justify-between items-start mb-6">' +
           '<div>' +
-            '<h2 class="text-xl font-bold text-primary-600">' + (company?.name || 'Your Company') + '</h2>' +
+            '<h2 class="text-xl font-bold" style="color:' + primaryColor + '">' + (company?.name || 'Your Company') + '</h2>' +
             '<p class="text-xs text-gray-500 mt-1">' + (company?.email || '') + '</p>' +
           '</div>' +
           '<div class="text-right">' +
-            '<h1 class="text-2xl font-bold text-gray-300">INVOICE</h1>' +
+            '<h1 class="text-2xl font-bold" style="color:' + primaryColor + '">INVOICE</h1>' +
             '<p class="text-xs text-gray-500 mt-1">#' + document.getElementById('invoiceNumber').value + '</p>' +
           '</div>' +
         '</div>' +
-        '<div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">' +
-          '<p class="text-xs font-semibold text-gray-500 uppercase mb-1">Bill To</p>' +
+        '<div class="rounded-lg p-4 mb-4 border-l-4" style="background-color: ' + primaryColor + '10; border-color: ' + primaryColor + ';">' +
+          '<p class="text-xs font-semibold uppercase mb-1" style="color:' + primaryColor + '">Bill To</p>' +
           '<p class="font-medium">' + (client?.name || 'Select a client') + '</p>' +
           '<p class="text-xs text-gray-500">' + (client?.email || '') + '</p>' +
         '</div>' +
         '<table class="w-full mb-4">' +
-          '<thead><tr class="text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200 dark:border-gray-700">' +
+          '<thead><tr class="text-left text-xs font-bold uppercase border-b-2" style="border-color:' + primaryColor + '40; color:' + primaryColor + ';">' +
             '<th class="pb-2">Description</th><th class="pb-2 text-right">Qty</th><th class="pb-2 text-right">Rate</th><th class="pb-2 text-right">Amount</th>' +
           '</tr></thead>' +
           '<tbody>' + itemsHtml + '</tbody>' +
@@ -352,7 +412,7 @@
             '<div class="flex justify-between"><span class="text-gray-500">Subtotal</span><span>' + Utils.formatCurrency(subtotal) + '</span></div>' +
             '<div class="flex justify-between"><span class="text-gray-500">Tax</span><span>' + Utils.formatCurrency(tax) + '</span></div>' +
             (discount > 0 ? '<div class="flex justify-between"><span class="text-gray-500">Discount</span><span class="text-green-600">-' + Utils.formatCurrency(discount) + '</span></div>' : '') +
-            '<div class="flex justify-between font-bold text-lg border-t border-gray-200 dark:border-gray-700 pt-2 mt-2"><span>Total</span><span>' + Utils.formatCurrency(total) + '</span></div>' +
+            '<div class="flex justify-between font-bold text-lg border-t-2 pt-2 mt-2" style="border-color:' + primaryColor + '40;"><span>Total</span><span style="color:' + primaryColor + '">' + Utils.formatCurrency(total) + '</span></div>' +
           '</div>' +
         '</div>';
     }
@@ -361,80 +421,216 @@
       const text = document.getElementById('aiInput').value;
       if (!text.trim()) return;
       
-      const parsed = AIEngine.parseInvoiceText(text);
-      if (parsed.clientName && !document.getElementById('clientSelect').value) {
-        const existing = clients.find(c => c.name.toLowerCase() === parsed.clientName.toLowerCase());
-        if (existing) {
-          document.getElementById('clientSelect').value = existing.id;
+      const btn = document.querySelector('button[onclick="processAI()"]');
+      const originalBtnText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+      btn.disabled = true;
+
+      try {
+        const apiKey = 'AIzaSyCPf8gmo6JXVltSsRJOJ94RXLCzLhr_7f4';
+        const prompt = `Extract invoice details from the following text and return ONLY a valid JSON object.
+Format: { "clientName": "string", "dueDays": number, "items": [ { "description": "string", "quantity": number, "rate": number } ] }
+Text: "${text}"`;
+
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        });
+
+        if (!response.ok) throw new Error('API Request Failed');
+        
+        const data = await response.json();
+        let jsonResponse = data.candidates.content.parts.text;
+        
+        // Clean markdown formatting if Gemini includes it
+        jsonResponse = jsonResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(jsonResponse);
+
+        if (parsed.clientName && !document.getElementById('clientSelect').value) {
+          const existing = clients.find(c => c.name.toLowerCase().includes(parsed.clientName.toLowerCase()) || parsed.clientName.toLowerCase().includes(c.name.toLowerCase()));
+          if (existing) {
+            document.getElementById('clientSelect').value = existing.id;
+          } else {
+            document.getElementById('newClientName').value = parsed.clientName;
+            App.toast('New client detected! Please add them.', 'info');
+            showAddClientModal();
+          }
         }
+        
+        if (parsed.dueDays) {
+          const due = new Date();
+          due.setDate(due.getDate() + parsed.dueDays);
+          document.getElementById('dueDate').valueAsDate = due;
+        }
+        
+        if (parsed.items && parsed.items.length > 0) {
+          currentItems = [];
+          parsed.items.forEach(item => addItem(item.description, item.quantity, item.rate));
+        }
+        
+        if (typeof App !== 'undefined' && App.toast) App.toast('AI generated invoice from your description', 'success');
+        updatePreview();
+      } catch (error) {
+        console.error('Gemini API Error, falling back to local AI:', error);
+        
+        // Fallback to local NLP processing if Gemini fails
+        try {
+          const parsed = AIEngine.parseInvoice(text);
+          
+          if (parsed.clientName && !document.getElementById('clientSelect').value) {
+            const existing = clients.find(c => c.name.toLowerCase().includes(parsed.clientName.toLowerCase()));
+            if (existing) {
+              document.getElementById('clientSelect').value = existing.id;
+            }
+          }
+          
+          if (parsed.dueDays) {
+            const due = new Date();
+            due.setDate(due.getDate() + parsed.dueDays);
+            document.getElementById('dueDate').valueAsDate = due;
+          }
+          
+          if (parsed.items && parsed.items.length > 0) {
+            currentItems = [];
+            parsed.items.forEach(item => addItem(item.description, item.quantity, item.rate));
+          }
+          
+          if (typeof App !== 'undefined' && App.toast) App.toast('Invoice generated (Offline Mode)', 'success');
+          updatePreview();
+        } catch (fallbackError) {
+          if (typeof App !== 'undefined' && App.toast) App.toast('Failed to generate invoice via AI. Please try again.', 'error');
+        }
+      } finally {
+        btn.innerHTML = originalBtnText;
+        btn.disabled = false;
       }
-      
-      if (parsed.dueDays) {
-        const due = new Date();
-        due.setDate(due.getDate() + parsed.dueDays);
-        document.getElementById('dueDate').valueAsDate = due;
-      }
-      
-      if (parsed.items && parsed.items.length > 0) {
-        currentItems = [];
-        parsed.items.forEach(item => addItem(item.description, item.quantity, item.rate));
-      }
-      
-      App.toast('AI generated invoice from your description', 'success');
-      updatePreview();
     }
     
     function loadSuggestions() {
       const industry = document.getElementById('industrySelect').value;
-      const suggestions = AIEngine.suggestServices(industry);
-      const panel = document.getElementById('suggestionsPanel');
-      const list = document.getElementById('suggestionsList');
-      
-      if (suggestions.length > 0) {
-        panel.classList.remove('hidden');
-        list.innerHTML = suggestions.slice(0, 5).map(s => 
-          '<button onclick="addItem(\'' + s.name + '\', 1, ' + s.suggestedPrice + ')" class="text-xs px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-500 transition">' +
-            s.name + ' (' + Utils.formatCurrency(s.suggestedPrice) + ')' +
-          '</button>'
-        ).join('');
-      } else {
-        panel.classList.add('hidden');
+      if (typeof AIEngine !== 'undefined' && AIEngine.getSuggestions) {
+        const suggestions = AIEngine.getSuggestions(industry);
+        const panel = document.getElementById('suggestionsPanel');
+        const list = document.getElementById('suggestionsList');
+        
+        if (suggestions && suggestions.length > 0) {
+          panel.classList.remove('hidden');
+          list.innerHTML = suggestions.slice(0, 5).map(s => 
+            '<button onclick="addItem(\'' + s.description + '\', 1, ' + s.rate + ')" class="text-xs px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-500 transition">' +
+              s.description + ' (' + Utils.formatCurrency(s.rate) + ')' +
+            '</button>'
+          ).join('');
+        } else {
+          panel.classList.add('hidden');
+        }
       }
     }
     
     function showAddClientModal() {
-      App.openModal();
+      const modal = document.getElementById('clientModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        setTimeout(() => document.getElementById('newClientName')?.focus(), 100);
+      }
     }
     
-    async function addClient() {
-      const client = {
-        id: Utils.uuid(),
-        companyId: company.id,
-        name: document.getElementById('newClientName').value,
-        email: document.getElementById('newClientEmail').value,
-        phone: document.getElementById('newClientPhone').value,
-        address: document.getElementById('newClientAddress').value,
-        status: 'active',
-        createdAt: new Date().toISOString()
-      };
-      await DB.add('clients', client);
-      clients.push(client);
+    function closeClientModal() {
+      const modal = document.getElementById('clientModal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+      document.getElementById('newClientName').value = '';
+      document.getElementById('newClientEmail').value = '';
+      document.getElementById('newClientPhone').value = '';
+      document.getElementById('newClientAddress').value = '';
+    }
+    
+async function addClient() {
+      const btn = document.getElementById('saveClientBtn');
+      const originalText = btn ? btn.innerHTML : 'Add Client';
       
-      const opt = document.createElement('option');
-      opt.value = client.id;
-      opt.textContent = client.name;
-      document.getElementById('clientSelect').appendChild(opt);
-      document.getElementById('clientSelect').value = client.id;
+      const name = document.getElementById('newClientName').value.trim();
+      const email = document.getElementById('newClientEmail').value.trim();
       
-      App.closeModal();
-      App.toast('Client added', 'success');
-      updatePreview();
+      if (!name) {
+        if (typeof App !== 'undefined' && App.toast) {
+          App.toast('Please enter client name', 'warning');
+        } else {
+          alert('Please enter client name');
+        }
+        return;
+      }
+      
+      if (!company || !company.id) {
+        if (typeof App !== 'undefined' && App.toast) {
+          App.toast('Error: Company not loaded. Please refresh the page.', 'error');
+        } else {
+          alert('Error: Company not loaded. Please refresh the page.');
+        }
+        return;
+      }
+
+      if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        btn.disabled = true;
+      }
+      
+      try {
+        const newClient = {
+          id: Utils.uuid(),
+          companyId: company.id,
+          name: name,
+          email: email,
+          phone: document.getElementById('newClientPhone').value.trim(),
+          address: document.getElementById('newClientAddress').value.trim(),
+          status: 'active',
+          createdAt: new Date().toISOString()
+        };
+        
+        await DB.add('clients', newClient);
+        clients.push(newClient);
+        
+        const select = document.getElementById('clientSelect');
+        const opt = document.createElement('option');
+        opt.value = newClient.id;
+        opt.textContent = newClient.name;
+        select.appendChild(opt);
+        select.value = newClient.id;
+        
+        closeClientModal();
+        if (typeof App !== 'undefined' && App.toast) {
+          App.toast('Client added successfully!', 'success');
+        } else {
+          alert('Client added successfully!');
+        }
+        updatePreview();
+      } catch (err) {
+        console.error('Error adding client:', err);
+        if (typeof App !== 'undefined' && App.toast) {
+          App.toast('Failed to add client. Please try again.', 'error');
+        } else {
+          alert('Failed to add client. Please try again.');
+        }
+      } finally {
+        if (btn) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      }
     }
     
     async function saveInvoice(status) {
       const clientId = document.getElementById('clientSelect').value;
       if (!clientId) {
-        App.toast('Please select a client', 'warning');
+        if (typeof App !== 'undefined' && App.toast) {
+          App.toast('Please select a client', 'warning');
+        } else {
+          alert('Please select a client');
+        }
         return;
       }
       
@@ -445,14 +641,14 @@
       const discount = (subtotal * discountRate) / 100;
       const total = subtotal + tax - discount;
       
+      const invoiceId = Utils.uuid();
       const invoice = {
-        id: Utils.uuid(),
+        id: invoiceId,
         companyId: company.id,
         clientId: clientId,
         invoiceNumber: document.getElementById('invoiceNumber').value,
         issueDate: document.getElementById('issueDate').value,
         dueDate: document.getElementById('dueDate').value,
-        templateId: document.getElementById('templateSelect').value,
         subtotal: subtotal,
         tax: tax,
         discount: discount,
@@ -460,33 +656,30 @@
         totalPaid: 0,
         status: status,
         notes: document.getElementById('invoiceNotes').value,
+        template: document.getElementById('templateSelect')?.value || 'modern',
         createdAt: new Date().toISOString()
       };
       
-      await DB.add('invoices', invoice);
-      
-      for (const item of currentItems) {
-        await DB.add('invoiceItems', {
-          id: Utils.uuid(),
-          invoiceId: invoice.id,
-          description: item.description,
-          quantity: item.quantity,
-          rate: item.rate,
-          amount: item.quantity * item.rate
-        });
+      try {
+        await DB.add('invoices', invoice);
+        
+        for (const item of currentItems) {
+          await DB.add('invoiceItems', {
+              id: Utils.uuid(),
+              invoiceId: invoiceId,
+              description: item.description,
+              quantity: item.quantity,
+              rate: item.rate,
+              amount: item.quantity * item.rate
+          });
+        }
+        
+        alert('Invoice ' + (status === 'draft' ? 'saved as draft' : 'sent'));
+        setTimeout(() => window.location.href = 'invoice-list.html', 1000);
+      } catch (err) {
+        console.error(err);
+        alert('Error saving invoice: ' + err.message);
       }
-      
-      await DB.add('activities', {
-        id: Utils.uuid(),
-        companyId: company.id,
-        type: 'invoice_created',
-        title: 'Invoice ' + invoice.invoiceNumber + ' created',
-        description: 'Created for ' + (clients.find(c => c.id === clientId)?.name || 'Unknown'),
-        createdAt: new Date().toISOString()
-      });
-      
-      App.toast('Invoice ' + (status === 'draft' ? 'saved as draft' : 'sent'), 'success');
-      setTimeout(() => window.location.href = 'invoice-list.html', 1000);
     }
     
     function exportPDF() {
@@ -505,11 +698,29 @@
       window.print();
     }
     
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeClientModal();
+      }
+    });
+    
+    document.addEventListener('click', function(e) {
+      const modal = document.getElementById('clientModal');
+      if (e.target === modal) {
+        closeClientModal();
+      }
+    });
+    
     document.addEventListener('DOMContentLoaded', async () => {
-      if (!await Auth.requireAuth()) return;
+      if (!window.DB_READY) {
+        await new Promise(resolve => {
+          if (window.DB_READY) return resolve();
+          document.addEventListener('dbReady', resolve, { once: true });
+          setTimeout(resolve, 1000);
+        });
+      }
       await init();
     });
-
   </script>
 </body>
 </html>

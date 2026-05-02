@@ -174,8 +174,36 @@
         return;
       }
       
+// Template colors
+      const primaryColor = invoiceData.template?.colors?.primary || '#6366f1';
+      
       // Company info
       document.getElementById('companyName').textContent = invoiceData.company.name;
+      document.getElementById('companyName').style.color = primaryColor;
+      
+      // Apply primary color to the whole invoice layout
+      const invoiceTemplate = document.getElementById('invoiceTemplate');
+      if (invoiceTemplate) {
+        invoiceTemplate.style.borderTop = '8px solid ' + primaryColor;
+      }
+      
+      const titleH1 = document.querySelector('.text-right h1');
+      if (titleH1) titleH1.style.color = primaryColor;
+      
+      const billToBox = document.querySelector('.bg-gray-50.rounded-xl');
+      if (billToBox) {
+        billToBox.style.backgroundColor = primaryColor + '10';
+        billToBox.style.borderLeft = '4px solid ' + primaryColor;
+        const billToTitle = billToBox.querySelector('h3');
+        if (billToTitle) billToTitle.style.color = primaryColor;
+      }
+      
+      const theadTr = document.querySelector('thead tr');
+      if (theadTr) {
+        theadTr.style.borderColor = primaryColor + '40';
+        theadTr.querySelectorAll('th').forEach(th => th.style.color = primaryColor);
+      }
+
       document.getElementById('companyDetails').innerHTML = `
         ${invoiceData.company.email ? `<p>${invoiceData.company.email}</p>` : ''}
         ${invoiceData.company.phone ? `<p>${invoiceData.company.phone}</p>` : ''}
@@ -207,10 +235,16 @@
         </tr>
       `).join('');
       
-      // Summary
+// Summary
       document.getElementById('invSubtotal').textContent = Utils.formatCurrency(invoiceData.subtotal);
       document.getElementById('invTax').textContent = Utils.formatCurrency(invoiceData.tax);
       document.getElementById('invTotal').textContent = Utils.formatCurrency(invoiceData.total);
+      document.getElementById('invTotal').style.color = primaryColor;
+      
+      const totalRow = document.querySelector('.border-t.pt-3.text-xl');
+      if (totalRow) {
+        totalRow.style.borderColor = primaryColor + '40';
+      }
       
       if (invoiceData.discount > 0) {
         document.getElementById('invDiscountRow').classList.remove('hidden');

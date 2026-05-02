@@ -1,7 +1,11 @@
 /**
  * Smart Invoice AI - AI Engine Module
- * Simulates AI-powered features for invoice creation and business intelligence
+ * Provides AI-powered features for invoice creation and business intelligence
  */
+
+// Google Gemini API Configuration
+const GEMINI_API_KEY = 'AIzaSyCPf8gmo6JXVltSsRJOJ94RXLCzLhr_7f4';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 const AIEngine = {
   // Industry-specific service suggestions
@@ -205,7 +209,22 @@ const AIEngine = {
   },
 
   // Generate follow-up email
-  generateFollowUpEmail(invoice, tone = 'professional') {
+  async generateFollowUpEmail(invoice, tone = 'professional') {
+    try {
+      const prompt = `Write a ${tone} payment reminder email to ${invoice.clientName} for invoice ${invoice.invoiceNumber}. The amount due is $${invoice.total} and was due on ${invoice.dueDate}. The sender company is ${invoice.companyName}. Return JSON ONLY in this exact format: {"subject": "string", "body": "string"}`;
+      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { response_mime_type: "application/json" }
+        })
+      });
+      const data = await response.json();
+      return JSON.parse(data.candidates[0].content.parts[0].text);
+    } catch (e) {
+      console.error("Gemini API error, using fallback:", e);
+
     const tones = {
       professional: {
         subject: `Payment Reminder: Invoice ${invoice.invoiceNumber}`,
@@ -244,10 +263,27 @@ ${invoice.companyName}`
     };
 
     return tones[tone] || tones.professional;
+    }
   },
 
   // Predict cash flow
-  predictCashFlow(invoices, months = 3) {
+  async predictCashFlow(invoices, months = 3) {
+    try {
+      const invoiceData = invoices.map(i => ({ amount: i.total, status: i.status, dueDate: i.dueDate }));
+      const prompt = `Based on these invoices: ${JSON.stringify(invoiceData)}. Predict the expected cash flow for the next ${months} months. Return JSON ONLY as an array in this exact format: [{"month": "MMM YYYY", "expected": 0, "optimistic": 0, "conservative": 0, "confidence": 0}]`;
+      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { response_mime_type: "application/json" }
+        })
+      });
+      const data = await response.json();
+      return JSON.parse(data.candidates[0].content.parts[0].text);
+    } catch (e) {
+      console.error("Gemini API error, using fallback:", e);
+
     const now = new Date();
     const predictions = [];
     
@@ -297,10 +333,33 @@ ${invoice.companyName}`
     }
     
     return predictions;
+    }
   },
 
   // Suggest pricing based on market data
-  suggestPricing(service, industry = 'technology') {
+  async suggestPricing(service, industry = 'technology') {
+    try {
+      const prompt = `What is the average market price for "${service}" in the ${industry} industry? Return JSON ONLY in this exact format:
+      {
+        "suggestedRate": number,
+        "range": { "min": number, "max": number },
+        "marketAverage": number,
+        "confidence": "high" or "medium" or "low",
+        "note": "short explanation"
+      }`;
+      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { response_mime_type: "application/json" }
+        })
+      });
+      const data = await response.json();
+      return JSON.parse(data.candidates[0].content.parts[0].text);
+    } catch (e) {
+      console.error("Gemini API error, using fallback:", e);
+
     const services = this.industryServices[industry] || this.industryServices.technology;
     const match = services.find(s => 
       s.description.toLowerCase().includes(service.toLowerCase()) ||
@@ -328,10 +387,34 @@ ${invoice.companyName}`
       confidence: 'high',
       note: `Based on ${industry} industry averages`
     };
+    }
   },
 
   // Match expenses to invoices (simulated)
-  matchExpenses(expenses, invoices) {
+  async matchExpenses(expenses, invoices) {
+    try {
+      const expData = expenses.map(e => ({ id: e.id, description: e.description, amount: e.amount, date: e.date }));
+      const invData = invoices.map(i => ({ id: i.id, number: i.invoiceNumber, amount: i.total, date: i.issueDate }));
+      const prompt = `Match these expenses: ${JSON.stringify(expData)} to these invoices: ${JSON.stringify(invData)} based on similarity in description, amounts, and dates. Return JSON ONLY as an array of matches in this format: [{"expenseId": "id", "invoiceId": "id", "confidence": 0.9, "reason": "string"}]`;
+      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { response_mime_type: "application/json" }
+        })
+      });
+      const data = await response.json();
+      const geminiMatches = JSON.parse(data.candidates[0].content.parts[0].text);
+      return geminiMatches.map(gm => ({
+        expense: expenses.find(e => e.id === gm.expenseId),
+        invoice: invoices.find(i => i.id === gm.invoiceId),
+        confidence: gm.confidence,
+        reason: gm.reason
+      })).filter(m => m.expense && m.invoice);
+    } catch (e) {
+      console.error("Gemini API error, using fallback:", e);
+
     const matches = [];
     
     expenses.forEach(expense => {
@@ -353,6 +436,7 @@ ${invoice.companyName}`
     });
     
     return matches;
+    }
   },
 
   calculateMatchScore(expense, invoice) {
