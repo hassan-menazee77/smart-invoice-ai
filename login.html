@@ -272,12 +272,15 @@
       btn.disabled = true;
       
       try {
-        // Wait for Auth to be available
+        // Wait a bit for Auth to be available if not ready yet
+        let attempts = 0;
+        while (!window.Auth && attempts < 50) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+        
         if (!window.Auth) {
-          await new Promise(resolve => {
-            if (window.Auth) resolve();
-            else window.addEventListener('authReady', resolve);
-          });
+          throw new Error('Authentication not loaded. Please refresh the page.');
         }
         
         await window.Auth.login(
@@ -302,12 +305,15 @@
       btn.disabled = true;
       
       try {
-        // Wait for Auth to be available
+        // Wait a bit for Auth to be available if not ready yet
+        let attempts = 0;
+        while (!window.Auth && attempts < 50) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+        
         if (!window.Auth) {
-          await new Promise(resolve => {
-            if (window.Auth) resolve();
-            else window.addEventListener('authReady', resolve);
-          });
+          throw new Error('Authentication not loaded. Please refresh the page.');
         }
         
         await window.Auth.register(
